@@ -15,7 +15,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "packageManager": "pnpm@10.10.0",
   "dependencies": {
     "argon2": "^0.43.1",
