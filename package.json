@@ -10,7 +10,8 @@
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed:admin": "ts-node src/seed/seedAdmin.ts"
+    "seed:admin": "ts-node src/seed/seedAdmin.ts",
+    "seed:content": "bun run src/seed/seedContent.ts"
   },
   "keywords": [],
   "author": "",

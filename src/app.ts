@@ -8,6 +8,7 @@ import { ShippingAddressRoutes } from './app/order/shipping/shippingAdress.route
 import { ClientsRoutes } from './app/user/client/client.route';
 import { AdminRoutes } from './app/user/admin/admin.route';
 import { CompanyRoutes } from './app/companySetting/companySettings.routes';
+import { ContentRoutes } from './app/content/content.routes';
 
 const app: Application = express();
 
@@ -42,6 +43,8 @@ app.use('/api/v1/clients', ClientsRoutes);
 //admins
 app.use('/api/v1/admins', AdminRoutes);
 
+//content management
+app.use('/api/v1/content', ContentRoutes); 
 
 
 
