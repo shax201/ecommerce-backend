@@ -1,0 +1,38 @@
+import express from 'express';
+import { ProductImportExportControllers, uploadMiddleware } from './productImportExport.controller';
+import { authMiddleware, authorizeRoles } from '../../../middlewares/auth.middleware';
+import { query, param } from 'express-validator';
+
+const router = express.Router();
+
+// Validation middleware
+const exportQueryValidation = [
+  query('format').optional().isIn(['csv', 'xlsx', 'json']).withMessage('Format must be csv, xlsx, or json'),
+  query('fields').optional().isString().withMessage('Fields must be a comma-separated string'),
+  query('status').optional().isString().withMessage('Status must be a comma-separated string'),
+  query('categories').optional().isString().withMessage('Categories must be a comma-separated string'),
+  query('featured').optional().isBoolean().withMessage('Featured must be a boolean'),
+  query('startDate').optional().isISO8601().withMessage('Start date must be in ISO format'),
+  query('endDate').optional().isISO8601().withMessage('End date must be in ISO format'),
+  query('includeVariants').optional().isBoolean().withMessage('Include variants must be a boolean'),
+  query('includeAnalytics').optional().isBoolean().withMessage('Include analytics must be a boolean'),
+];
+
+const templateQueryValidation = [
+  query('format').optional().isIn(['csv', 'xlsx']).withMessage('Format must be csv or xlsx'),
+];
+
+// Public routes
+router.get('/export', exportQueryValidation, ProductImportExportControllers.exportProducts);
+router.get('/template', templateQueryValidation, ProductImportExportControllers.getImportTemplate);
+router.get('/export-options', ProductImportExportControllers.getExportOptions);
+
+// Protected routes (require authentication)
+router.post('/import', authMiddleware, uploadMiddleware, ProductImportExportControllers.importProducts);
+router.post('/validate', authMiddleware, uploadMiddleware, ProductImportExportControllers.validateImportFile);
+
+// Admin routes (require admin role)
+router.get('/import-history', authMiddleware, authorizeRoles(['admin']), ProductImportExportControllers.getImportHistory);
+router.get('/export-history', authMiddleware, authorizeRoles(['admin']), ProductImportExportControllers.getExportHistory);
+
+export const ProductImportExportRoutes = router;

@@ -507,7 +507,7 @@ const purchaseProduct = async (req: Request, res: Response) => {
   try {
     const productData: TProductPurchase = req.body;
     // Ensure clientID is provided
-    if (!productData.clientID) {
+    if (!productData.user) {
       return res.status(400).json({
         success: false,
         message: 'Client ID is required to purchase a product.',

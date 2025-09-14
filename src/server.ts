@@ -4,7 +4,7 @@ import { config } from './config';
 
 async function main() {
   try {
-    const PORT = process.env.PORT || 5000;
+    const PORT = parseInt(process.env.PORT || '5000', 10);
     await mongoose.connect(config.database_url as string);
 
     app.listen(PORT, '0.0.0.0', () => {

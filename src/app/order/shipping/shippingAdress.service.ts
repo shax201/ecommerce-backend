@@ -2,22 +2,22 @@ import { TShippingAddress } from "./shippingAddress.interface";
 import ShippingAddressModel from "./shippingAdress.model";
 
 const createShippingAddress = async (shippingData: TShippingAddress) => {
-
     if(shippingData.isDefault){
-     await ShippingAddressModel.updateMany({}, { isDefault: false });
-    };
+        await ShippingAddressModel.updateMany({ user: shippingData.user }, { isDefault: false });
+    }
 
     const shippingAddress = await ShippingAddressModel.create(shippingData);
     return shippingAddress;
 };
 
-const getShippingAddress = async () => {
-    const shippingAddress = await ShippingAddressModel.find();
+const getShippingAddress = async (userId?: string) => {
+    const query = userId ? { user: userId } : {};
+    const shippingAddress = await ShippingAddressModel.find().populate('user', 'firstName lastName email');
     return shippingAddress;
 };
 
 const getShippingAddressById = async (id: string) => {
-    const shippingAddress = await ShippingAddressModel.findById(id);
+    const shippingAddress = await ShippingAddressModel.findById(id).populate('user', 'firstName lastName email');
     return shippingAddress;
 };
 
@@ -33,15 +33,22 @@ const updateShippingAddress = async (
   return updatedAddress;
 };
 
-const setDefaultShippingAddress = async (id: string) => {
+const setDefaultShippingAddress = async (id: string, userId: string) => {
+  // First get the address to find the user
+  const address = await ShippingAddressModel.findById(id);
+  if (!address) {
+    throw new Error('Address not found');
+  }
 
-  await ShippingAddressModel.updateMany({}, { isDefault: false });
+  // Update all addresses for this user to not be default
+  await ShippingAddressModel.updateMany({ user: address.user }, { isDefault: false });
 
+  // Set the specified address as default
   const updatedAddress = await ShippingAddressModel.findByIdAndUpdate(
     id,
     { isDefault: true },
     { new: true }
-  );
+  ).populate('user', 'firstName lastName email');
 
   return updatedAddress;
 };

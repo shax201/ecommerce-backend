@@ -7,10 +7,20 @@ export type TOrderHistoryBase = {
     totalPrice: number;
     estimatedDeliveryDate?: Date;
     trackingSteps: ('pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled')[];
-    paymentMethod: string;
+    paymentMethod: 'credit_card' | 'debit_card' | 'paypal' | 'stripe' | 'cash_on_delivery';
     paymentStatus: boolean;
+    orderNumber: string;
+    notes?: string;
+    status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
 };
 
 export type TOrderHistory = TOrderHistoryBase & {
     shipping: Types.ObjectId;
 };
+
+export type TCreateOrder = Omit<TOrderHistory, 'orderNumber' | 'status'> & {
+    orderNumber?: string;
+    status?: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+};
+
+export type TUpdateOrder = Partial<Pick<TOrderHistory, 'trackingSteps' | 'paymentStatus' | 'estimatedDeliveryDate' | 'notes' | 'status'>>;

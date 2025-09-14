@@ -358,25 +358,32 @@ const getProductsByCategoryFromDB = async (categoryId: string) => {
 
 
 const purchaseProduct = async (payload: TProductPurchase) => {
-  const productData = payload;
+  const productData:any = payload;
 
+  // Generate a 7-digit order number
+  const orderNumber = Math.floor(1000000 + Math.random() * 9000000).toString();
 
+  let shippingAddress:any;
 
-  const shippingData = await ShippingAddressServices.createShippingAddress(productData.shipping);
-
-  const orderHistoryData = {
-    ...productData,
-    shipping: shippingData._id,
-    productID: productData.productID.map((id) => new Types.ObjectId(id)),
-    clientID: new Types.ObjectId(productData.clientID),
-  };
-
-  const orderHistory = await OrderServices.createOrderHistory(orderHistoryData);
-  return orderHistory;
+  if(!productData.shipping._id){
+    shippingAddress = await ShippingAddressServices.createShippingAddress(productData.shipping);
+  }else{
+    shippingAddress = await ShippingAddressServices.updateShippingAddress(productData.shipping._id, productData.shipping);
+  }
+    const orderHistoryData = {
+      ...productData,
+      orderNumber,
+      shipping: shippingAddress._id,
+      productID: productData.productID.map((id:string) => new Types.ObjectId(id)),
+      clientID: new Types.ObjectId(productData.user),
+    };
+  
+    const orderHistory = await OrderServices.createOrderHistory(orderHistoryData);
+    return orderHistory;
 };
 
 const getTopSellingProductsFromDB = async () => {
-  // Aggregate sales data from order history to determine top selling products
+  // First try to get products from actual sales data
   const pipeline: PipelineStage[] = [
     // Unwind the productID array to get individual product entries
     { $unwind: '$productID' },
@@ -456,23 +463,41 @@ const getTopSellingProductsFromDB = async () => {
 
   const salesData = await OrderHistoryModel.aggregate(pipeline);
 
-  // Transform the results to match the expected product format
-  return salesData.map((item: any) => {
-    const base = { ...item };
-    const transformed: Record<string, any> = {
-      ...base,
-      variants: {
-        color: (base.color || []).map((c: any) => ({ name: c.color ?? c.name ?? '', code: c.code ?? c.color ?? '' })),
-        size: (base.size || []).map((s: any) => s.size ?? '')
-      }
-    };
+  // If we have sales data, return it
+  if (salesData && salesData.length > 0) {
+    return salesData.map((item: any) => {
+      const base = { ...item };
+      const transformed: Record<string, any> = {
+        ...base,
+        variants: {
+          color: (base.color || []).map((c: any) => ({ name: c.color ?? c.name ?? '', code: c.code ?? c.color ?? '' })),
+          size: (base.size || []).map((s: any) => s.size ?? '')
+        }
+      };
 
-    // Remove the original color and size fields
-    delete transformed.color;
-    delete transformed.size;
+      // Remove the original color and size fields
+      delete transformed.color;
+      delete transformed.size;
 
-    return transformed;
-  });
+      return transformed;
+    });
+  }
+
+  // Fallback: Get products marked as "top_selling" from the productType field
+  const fallbackProducts = await ProductModel.find({ productType: 'top_selling' })
+    .populate({
+      path: 'catagory',
+      model: 'Catagory',
+      populate: {
+        path: 'parent',
+        model: 'Catagory',
+      },
+    })
+    .populate({ path: 'color', model: 'Color', select: 'color -_id' })
+    .populate({ path: 'size', model: 'Size', select: 'size -_id' })
+    .limit(10);
+
+  return fallbackProducts.map(transformProductData);
 };
 
 export const ProductServices = {

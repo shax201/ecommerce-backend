@@ -1,20 +1,68 @@
 import mongoose from 'mongoose';
-import { TOrderHistory } from "./orderHistory.interface";
+import { TOrderHistory, TCreateOrder, TUpdateOrder } from "./orderHistory.interface";
 import OrderHistoryModel from "./orderHistory.model";
 
-
- const createOrderHistory = async ( productData: TOrderHistory ) => {
-    const orderHistory = await OrderHistoryModel.create(productData);
+const createOrderHistory = async (orderData: TCreateOrder) => {
+    const orderHistory = await OrderHistoryModel.create(orderData);
     return orderHistory;
 }; 
 
  const getOrderHistory = async () => {
-    const orderHistory = await OrderHistoryModel.find();
+    const orderHistory = await OrderHistoryModel.find()
+        .populate('productID', 'title price primaryImage')
+        .populate('clientID', 'firstName lastName email')
+        .populate('shipping', 'address city state zip country phone name');
     return orderHistory;
 };
 
  const getOrderHistoryById = async (id: string) => {
-    const orderHistory = await OrderHistoryModel.findById(id);
+    const orderHistory = await OrderHistoryModel.findById(id)
+        .populate('productID', 'title price primaryImage')
+        .populate('clientID', 'firstName lastName email')
+        .populate('shipping', 'address city state zip country phone name');
+    return orderHistory;
+};
+
+const updateOrderHistory = async (id: string, updateData: TUpdateOrder) => {
+    const orderHistory = await OrderHistoryModel.findByIdAndUpdate(
+        id,
+        updateData,
+        { new: true, runValidators: true }
+    )
+    .populate('productID', 'title price primaryImage')
+    .populate('clientID', 'firstName lastName email')
+    .populate('shipping', 'address city state zip country phone name');
+    
+    return orderHistory;
+};
+
+const deleteOrderHistory = async (id: string) => {
+    const orderHistory = await OrderHistoryModel.findByIdAndDelete(id);
+    return orderHistory;
+};
+
+const updateOrderStatus = async (id: string, status: string, notes?: string) => {
+    const updateData: TUpdateOrder = { 
+        status: status as any,
+        notes 
+    };
+    
+    // Add the new status to tracking steps
+    const order = await OrderHistoryModel.findById(id);
+    if (order) {
+        const newTrackingSteps = [...order.trackingSteps, status as any];
+        updateData.trackingSteps = newTrackingSteps;
+    }
+    
+    const orderHistory = await OrderHistoryModel.findByIdAndUpdate(
+        id,
+        updateData,
+        { new: true, runValidators: true }
+    )
+    .populate('productID', 'title price primaryImage')
+    .populate('clientID', 'firstName lastName email')
+    .populate('shipping', 'address city state zip country phone name');
+    
     return orderHistory;
 };
 
@@ -402,10 +450,42 @@ const getOrdersForClient = async (
 
 
 
+// Get orders by user ID
+const getOrderHistoryByUserId = async (userId: string) => {
+    const orderHistory = await OrderHistoryModel.find({ clientID: userId })
+        .populate('productID', 'title price primaryImage')
+        .populate('clientID', 'firstName lastName email')
+        .populate('shipping', 'address city state zip country phone name')
+        .sort({ createdAt: -1 });
+    return orderHistory;
+};
+
+// Create order (alias for createOrderHistory)
+const createOrder = async (orderData: TCreateOrder) => {
+    return createOrderHistory(orderData);
+};
+
+// Update order (alias for updateOrderHistory)
+const updateOrder = async (id: string, updateData: TUpdateOrder) => {
+    return updateOrderHistory(id, updateData);
+};
+
+// Delete order (alias for deleteOrderHistory)
+const deleteOrder = async (id: string) => {
+    return deleteOrderHistory(id);
+};
+
 export const OrderServices = {
     createOrderHistory,
+    createOrder,
     getOrderHistory,
     getOrderHistoryById,
+    getOrderHistoryByUserId,
+    updateOrderHistory,
+    updateOrder,
+    deleteOrderHistory,
+    deleteOrder,
+    updateOrderStatus,
     getOrdersForClient,
     getClientAnalytics,
 };

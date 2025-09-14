@@ -67,9 +67,160 @@ const getOrderHistoryById = async (req: Request, res: Response) => {
 
 
 
+const createOrder = async (req: AuthRequest, res: Response) => {
+  try {
+    let userId = await decodeBearerTokenAndGetUserId(req.headers.authorization);
+    if (!userId) {
+      userId = req.user?.userId as string | undefined;
+    }
+    if (!userId && req.user?.email) {
+      const client = await ClientModel.findOne({ email: req.user.email }).select('_id');
+      if (client?._id) userId = String(client._id);
+    }
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized - User not found',
+      });
+    }
+
+    const orderData = { ...req.body, clientID: userId };
+    const newOrder = await OrderServices.createOrderHistory(orderData);
+
+    res.status(201).json({
+      success: true,
+      message: 'Order created successfully',
+      data: newOrder,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create order',
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    });
+  }
+};
+
+const updateOrder = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order ID format',
+      });
+    }
+
+    const updatedOrder = await OrderServices.updateOrderHistory(id, updateData);
+    
+    if (!updatedOrder) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Order updated successfully',
+      data: updatedOrder,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update order',
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    });
+  }
+};
+
+const deleteOrder = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order ID format',
+      });
+    }
+
+    const deletedOrder = await OrderServices.deleteOrderHistory(id);
+    
+    if (!deletedOrder) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Order deleted successfully',
+      data: deletedOrder,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete order',
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    });
+  }
+};
+
+const updateOrderStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status, notes } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order ID format',
+      });
+    }
+
+    const validStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status. Must be one of: ' + validStatuses.join(', '),
+      });
+    }
+
+    const updatedOrder = await OrderServices.updateOrderStatus(id, status, notes);
+    
+    if (!updatedOrder) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Order status updated successfully',
+      data: updatedOrder,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update order status',
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    });
+  }
+};
+
 export const OrderControllers = {
   getOrderHistory,
   getOrderHistoryById,
+  createOrder,
+  updateOrder,
+  deleteOrder,
+  updateOrderStatus,
   async getMyOrders(req: AuthRequest, res: Response) {
     try {
       let userId = await decodeBearerTokenAndGetUserId(req.headers.authorization);
