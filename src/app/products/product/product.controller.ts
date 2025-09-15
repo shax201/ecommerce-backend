@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { ProductServices } from './product.service';
 import { TProductPurchase, TProductQuery } from './product.interface';
 import { ProductModel } from './product.model';
+import { CouponService } from '../../coupon/coupon.service';
 
 const dummyCategoryId = "66c1b4b5a1b2c3d4e5f6a7b8"
 const dummyColorIds = [
@@ -527,7 +528,45 @@ const purchaseProduct = async (req: Request, res: Response) => {
       });
     }
 
-    const result = await ProductServices.purchaseProduct(productData);
+    // Handle coupon validation and application if coupon code is provided
+    let couponData = null;
+    if (productData.couponCode) {
+      try {
+        // Get product details to calculate order value and get category IDs
+        const products = await ProductModel.find({ _id: { $in: productData.productID } })
+          .populate('catagory', '_id');
+        
+        const orderValue = products.reduce((sum, product) => {
+          return sum + (product.discountPrice || product.regularPrice);
+        }, 0);
+
+        const categoryIds = products.flatMap(product => 
+          product.catagory.map(cat => cat._id.toString())
+        );
+
+        // Validate and apply coupon
+        couponData = await CouponService.applyCoupon({
+          code: productData.couponCode,
+          orderValue,
+          userId: productData.user,
+          productIds: productData.productID,
+          categoryIds
+        });
+
+        // Update the total price with discount
+        productData.totalPrice = couponData.finalAmount;
+        productData.originalPrice = orderValue;
+        productData.discountAmount = couponData.discountAmount;
+      } catch (couponError) {
+        return res.status(400).json({
+          success: false,
+          message: 'Coupon validation failed',
+          error: couponError instanceof Error ? couponError.message : 'Invalid coupon',
+        });
+      }
+    }
+
+    const result = await ProductServices.purchaseProduct(productData, couponData);
 
     res.status(201).json({
       success: true,
@@ -554,6 +593,59 @@ const getTopSellingProducts = async (req: Request, res: Response) => {
   });
 };
 
+const validateCoupon = async (req: Request, res: Response) => {
+  try {
+    const { couponCode, productIds, userId } = req.body;
+
+    if (!couponCode) {
+      return res.status(400).json({
+        success: false,
+        message: 'Coupon code is required',
+      });
+    }
+
+    if (!productIds || !Array.isArray(productIds)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product IDs are required and must be an array',
+      });
+    }
+
+        // Get product details to calculate order value and get category IDs
+        const products = await ProductModel.find({ _id: { $in: productIds } })
+          .populate('catagory', '_id');
+    
+    const orderValue = products.reduce((sum, product) => {
+      return sum + (product.discountPrice || product.regularPrice);
+    }, 0);
+
+    const categoryIds = products.flatMap(product => 
+      product.catagory.map(cat => cat._id.toString())
+    );
+
+    // Validate coupon
+    const validation = await CouponService.validateCoupon({
+      code: couponCode,
+      orderValue,
+      userId,
+      productIds,
+      categoryIds
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Coupon validation successful',
+      data: validation,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: 'Coupon validation failed',
+      error: error instanceof Error ? error.message : 'Invalid coupon',
+    });
+  }
+};
+
 
 export const ProductControllers = {
   getProducts,
@@ -564,5 +656,6 @@ export const ProductControllers = {
   getProductsByCategory,
   purchaseProduct,
   seedProducts,
-  getTopSellingProducts
+  getTopSellingProducts,
+  validateCoupon
 };

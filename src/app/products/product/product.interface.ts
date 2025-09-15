@@ -74,6 +74,7 @@ export type TProductPurchase = Omit<TOrderHistoryBase, 'productID' | 'clientID'>
     productID: string[];
     user: string;
     shipping: TShippingAddress;
+    couponCode?: string;
 };
 
 

@@ -38,6 +38,10 @@ router.post('/purchase',
     //  authMiddleware, 
      ProductControllers.purchaseProduct);
 
+router.post('/validate-coupon',
+    //  authMiddleware, 
+     ProductControllers.validateCoupon);
+
 // Mount sub-routes
 router.use('/analytics', ProductAnalyticsRoutes);
 router.use('/reviews', ProductReviewRoutes);

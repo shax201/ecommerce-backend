@@ -27,6 +27,10 @@ export const CouponService = {
       .populate('applicableProducts', 'name price');
   },
 
+  async getCouponByCode(code: string) {
+    return await Coupon.findOne({ code: code.toUpperCase() });
+  },
+
   async getAll(filters: any = {}, page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
     const coupons = await Coupon.find(filters)

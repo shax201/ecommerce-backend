@@ -36,13 +36,13 @@ const getSingleColor = async (req: Request, res: Response) => {
       res.status(200).json({
         success: true,
         message: 'Color fetched successfully',
-        data: result,
+        data: [result], // Return as array for consistency
       });
     } else {
       res.status(200).json({
         success: false,
         message: 'No color found with that ID',
-        data: null,
+        data: [],
       });
     }
   } catch (error) {
@@ -142,7 +142,7 @@ const updateColor = async (req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       message: 'Color updated successfully',
-      data: result,
+      data: [result], // Return as array for consistency
     });
   } catch (error: unknown) {
     if (
@@ -246,13 +246,13 @@ const getSingleSize = async (req: Request, res: Response) => {
       res.status(200).json({
         success: true,
         message: 'Size fetched successfully',
-        data: result,
+        data: [result], // Return as array for consistency
       });
     } else {
       res.status(200).json({
         success: false,
         message: 'No size found with that ID',
-        data: null,
+        data: [],
       });
     }
   } catch (error) {
@@ -352,7 +352,7 @@ const updateSize = async (req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       message: 'Size updated successfully',
-      data: result,
+      data: [result], // Return as array for consistency
     });
   } catch (error: unknown) {
     if (

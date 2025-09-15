@@ -6,6 +6,7 @@ import { Types, PipelineStage } from 'mongoose';
 import { OrderServices } from '../../order/orderHistory/orderHistory.service';
 import { ShippingAddressServices } from '../../order/shipping/shippingAdress.service';
 import OrderHistoryModel from '../../order/orderHistory/orderHistory.model';
+import { CouponService } from '../../coupon/coupon.service';
 
 // Helper function to transform product data to include variants
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -357,7 +358,7 @@ const getProductsByCategoryFromDB = async (categoryId: string) => {
 };
 
 
-const purchaseProduct = async (payload: TProductPurchase) => {
+const purchaseProduct = async (payload: TProductPurchase, couponData?: any) => {
   const productData:any = payload;
 
   // Generate a 7-digit order number
@@ -376,9 +377,34 @@ const purchaseProduct = async (payload: TProductPurchase) => {
       shipping: shippingAddress._id,
       productID: productData.productID.map((id:string) => new Types.ObjectId(id)),
       clientID: new Types.ObjectId(productData.user),
+      // Add coupon information if available
+      ...(couponData && {
+        couponCode: productData.couponCode,
+        originalPrice: productData.originalPrice,
+        discountAmount: productData.discountAmount,
+      }),
     };
   
     const orderHistory = await OrderServices.createOrderHistory(orderHistoryData);
+    
+    // Record coupon usage if coupon was applied
+    if (couponData && productData.couponCode) {
+      try {
+        const coupon = await CouponService.getCouponByCode(productData.couponCode);
+        if (coupon) {
+          await CouponService.recordUsage(
+            (coupon as any)._id.toString(),
+            productData.user,
+            orderHistory._id.toString(),
+            productData.discountAmount || 0
+          );
+        }
+      } catch (error) {
+        console.error('Error recording coupon usage:', error);
+        // Don't fail the order if coupon recording fails
+      }
+    }
+    
     return orderHistory;
 };
 

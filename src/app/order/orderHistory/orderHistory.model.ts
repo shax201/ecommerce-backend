@@ -28,6 +28,27 @@ const orderHistorySchema = new Schema<TOrderHistory>({
         required: true,
         min: [0, 'Total price must be non-negative']
     },
+    originalPrice: { 
+        type: Number, 
+        required: false,
+        min: [0, 'Original price must be non-negative']
+    },
+    discountAmount: { 
+        type: Number, 
+        required: false,
+        min: [0, 'Discount amount must be non-negative']
+    },
+    couponCode: { 
+        type: String, 
+        required: false,
+        uppercase: true,
+        trim: true
+    },
+    couponId: { 
+        type: Schema.Types.ObjectId, 
+        ref: 'Coupon', 
+        required: false 
+    },
     estimatedDeliveryDate: { 
         type: Date, 
         required: false,

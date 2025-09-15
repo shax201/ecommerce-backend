@@ -5,6 +5,10 @@ export type TOrderHistoryBase = {
     clientID: Types.ObjectId;
     quantity: number;
     totalPrice: number;
+    originalPrice?: number;
+    discountAmount?: number;
+    couponCode?: string;
+    couponId?: Types.ObjectId;
     estimatedDeliveryDate?: Date;
     trackingSteps: ('pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled')[];
     paymentMethod: 'credit_card' | 'debit_card' | 'paypal' | 'stripe' | 'cash_on_delivery';
