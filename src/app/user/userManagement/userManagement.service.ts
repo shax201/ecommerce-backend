@@ -2,6 +2,7 @@ import { UserManagementModel, IUserManagement } from './userManagement.model';
 import { IUserManagementCreate, IUserManagementUpdate, IUserManagementQuery, IUserManagementStats, IUserManagementBulkOperation } from './userManagement.interface';
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import * as jose from 'jose';
 
 export class UserManagementService {
   // Create a new user
@@ -407,8 +408,21 @@ export class UserManagementService {
       user.lastLogin = new Date();
       await user.save();
 
-      // Generate JWT token (you'll need to implement this based on your JWT setup)
-      const token = 'jwt-token-here'; // Replace with actual JWT generation
+      // Generate JWT token
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
+      
+      const token = await new jose.SignJWT({ 
+        userId: String(user._id),
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        role: user.role
+      })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime(process.env.JWT_EXPIRES_IN || '7d')
+      .sign(secret);
 
       return {
         user: user.toJSON(),
