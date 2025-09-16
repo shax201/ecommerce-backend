@@ -7,6 +7,7 @@ const adminSchema = new Schema<TAdmin>({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     permission: { type: Object },
+    roles: [{ type: Schema.Types.ObjectId, ref: 'Role' }],
     status: { type: Boolean, required: true, default: true },
     image: { type: String, required: false },
 }, { timestamps: true });

@@ -52,8 +52,8 @@ const deleteAdmin = async (id: string) => {
 
 const loginAdmin = async (email: string, password: string) => {
     // Find admin by email
-    const admin = await AdminModel.findOne({ email }).lean<TAdmin>();
-    
+    const admin:any = await AdminModel.findOne({ email }).lean<TAdmin>();
+
     if (!admin) {
         throw new Error('Invalid email or password');
     }
@@ -69,7 +69,7 @@ const loginAdmin = async (email: string, password: string) => {
     const secret = new TextEncoder().encode(config.jwt_secret);
     
     const token = await new jose.SignJWT({ 
-        userId: admin._id,
+        userId: admin._id.toString(),
         email: admin.email,
         role: 'admin'
     })
@@ -81,7 +81,7 @@ const loginAdmin = async (email: string, password: string) => {
     // Return admin data without password and token
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...adminWithoutPassword } = admin;
-    
+
     return {
         admin: adminWithoutPassword,
         token

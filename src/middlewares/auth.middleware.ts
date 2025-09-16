@@ -19,6 +19,7 @@ export const authMiddleware = async (req: AuthRequest, res: Response, next: Next
   try {
     const secret = new TextEncoder().encode(config.jwt_secret);
     const { payload } = await jose.jwtVerify(token, secret);
+   
     req.user = payload;
     next();
   } catch (error) {

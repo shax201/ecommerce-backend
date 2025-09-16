@@ -1,5 +1,7 @@
 import express from 'express';
 import { ClientsControllers, updateClientPassword } from './client.controller';
+import { authMiddleware } from '../../../middlewares/auth.middleware';
+import { requirePermission } from '../../../middlewares/permission.middleware';
 
 const router = express.Router();
 
@@ -7,12 +9,41 @@ const router = express.Router();
 router.post('/', ClientsControllers.createClient);
 router.post('/login', ClientsControllers.loginClient);
 
-// Protected routes - require authentication
-router.get('/',  ClientsControllers.getAllClient);
-router.get('/:id', ClientsControllers.getClientById);
-router.put('/profile/:id', ClientsControllers.updateClientProfile);
-router.put('/:id', ClientsControllers.updateClient);
-router.put("/:clientId/password", updateClientPassword);
-router.delete('/:id', ClientsControllers.deleteClient);
+// Protected routes - require authentication and permissions
+router.get('/', 
+  authMiddleware, 
+  requirePermission('users', 'read'), 
+  ClientsControllers.getAllClient
+);
+
+router.get('/:id', 
+  authMiddleware, 
+  requirePermission('users', 'read'), 
+  ClientsControllers.getClientById
+);
+
+router.put('/profile/:id', 
+  authMiddleware, 
+  requirePermission('users', 'update'), 
+  ClientsControllers.updateClientProfile
+);
+
+router.put('/:id', 
+  authMiddleware, 
+  requirePermission('users', 'update'), 
+  ClientsControllers.updateClient
+);
+
+router.put("/:clientId/password", 
+  authMiddleware, 
+  requirePermission('users', 'update'), 
+  updateClientPassword
+);
+
+router.delete('/:id', 
+  authMiddleware, 
+  requirePermission('users', 'delete'), 
+  ClientsControllers.deleteClient
+);
 
 export const ClientsRoutes = router;

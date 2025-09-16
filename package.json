@@ -10,8 +10,15 @@
     "lint": "eslint . --ext .ts",
     "format": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed:admin": "ts-node src/seed/seedAdmin.ts",
-    "seed:content": "bun run src/seed/seedContent.ts"
+    "seed:admin": "bun run src/seed/seedAdmin.ts",
+    "seed:user-management": "bun run src/seed/seedUserManagement.ts",
+    "seed:content": "bun run src/seed/seedContent.ts",
+    "seed:all": "bun run src/seed/seedAll.ts",
+    "assign:roles": "bun run src/seed/assignRoles.ts",
+    "fix:admin-roles": "bun run src/seed/fixAdminRoles.ts",
+    "migrate:users": "bun run scripts/migrate-users.ts migrate",
+    "verify:migration": "bun run scripts/migrate-users.ts verify",
+    "rollback:migration": "bun run scripts/migrate-users.ts rollback"
   },
   "keywords": [],
   "author": "",

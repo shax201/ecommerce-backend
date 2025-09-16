@@ -5,6 +5,7 @@ import { ProductReviewRoutes } from './productReview.route';
 import { ProductWishlistRoutes } from './productWishlist.route';
 import { ProductImportExportRoutes } from './productImportExport.route';
 import { authMiddleware, authorizeRoles } from '../../../middlewares/auth.middleware';
+import { requirePermission } from '../../../middlewares/permission.middleware';
 
 const router = express.Router();
 
@@ -14,33 +15,34 @@ router.get('/top-selling', ProductControllers.getTopSellingProducts);
 router.get('/category/:categoryId', ProductControllers.getProductsByCategory);
 router.get('/:id', ProductControllers.getSingleProduct);
 
-// Protected routes (only admin can access)
+// Protected routes with permission-based access
 router.post('/create',
-    //  authMiddleware, 
-    //  authorizeRoles(['admin']), 
-     ProductControllers.createProduct);
+    authMiddleware, 
+    requirePermission('products', 'create'),
+    ProductControllers.createProduct);
 
 router.post('/seed_products',
-    //  authMiddleware, 
-    //  authorizeRoles(['admin']), 
-     ProductControllers.seedProducts);
+    authMiddleware, 
+    requirePermission('products', 'create'),
+    ProductControllers.seedProducts);
 
 router.put('/update/:id', 
-    //  authMiddleware, 
-    //  authorizeRoles(['admin']), 
-     ProductControllers.updateProduct);
+    authMiddleware, 
+    requirePermission('products', 'update'),
+    ProductControllers.updateProduct);
+
 router.delete('/delete/:id', 
-    //  authMiddleware, 
-    //  authorizeRoles(['admin']),
-      ProductControllers.deleteProduct);
+    authMiddleware, 
+    requirePermission('products', 'delete'),
+    ProductControllers.deleteProduct);
 
 router.post('/purchase',
-    //  authMiddleware, 
-     ProductControllers.purchaseProduct);
+    authMiddleware, 
+    ProductControllers.purchaseProduct);
 
 router.post('/validate-coupon',
-    //  authMiddleware, 
-     ProductControllers.validateCoupon);
+    authMiddleware, 
+    ProductControllers.validateCoupon);
 
 // Mount sub-routes
 router.use('/analytics', ProductAnalyticsRoutes);

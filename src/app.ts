@@ -10,10 +10,12 @@ import { OrderTrackingRoutes } from './app/order/orderTracking.route';
 import { OrderAnalyticsRoutes } from './app/order/orderAnalytics.route';
 import { ClientsRoutes } from './app/user/client/client.route';
 import { AdminRoutes } from './app/user/admin/admin.route';
+import { UserManagementRoutes } from './app/user/userManagement/userManagement.routes';
 import { CompanyRoutes } from './app/companySetting/companySettings.routes';
 import { ContentRoutes } from './app/content/content.routes';
 import { CouponRoutes } from './app/coupon/coupon.routes';
 import ReportsRoutes from './app/reports/reports.routes';
+import { PermissionRoutes } from './app/permission/permission.routes';
 
 const app: Application = express();
 
@@ -48,6 +50,9 @@ app.use('/api/v1/clients', ClientsRoutes);
 //admins
 app.use('/api/v1/admins', AdminRoutes);
 
+//user management
+app.use('/api/v1/user-management', UserManagementRoutes);
+
 //content management
 app.use('/api/v1/content', ContentRoutes);
 
@@ -56,6 +61,9 @@ app.use('/api/v1/coupons', CouponRoutes);
 
 //reports management
 app.use('/api/v1/reports', ReportsRoutes);
+
+//permission management
+app.use('/api/v1/permissions', PermissionRoutes);
 
 
 

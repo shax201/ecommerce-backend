@@ -1,6 +1,7 @@
 import express from 'express';
 import { ProductWishlistControllers } from './productWishlist.controller';
 import { authMiddleware } from '../../../middlewares/auth.middleware';
+import { requirePermission } from '../../../middlewares/permission.middleware';
 import { param, query, body } from 'express-validator';
 
 const router = express.Router();
@@ -34,16 +35,64 @@ const wishlistQueryValidation = [
   query('sortOrder').optional().isIn(['asc', 'desc']).withMessage('Sort order must be asc or desc'),
 ];
 
-// All routes require authentication
-router.post('/', authMiddleware, addToWishlistValidation, ProductWishlistControllers.addToWishlist);
-router.get('/', authMiddleware, wishlistQueryValidation, ProductWishlistControllers.getWishlist);
-router.get('/stats', authMiddleware, ProductWishlistControllers.getWishlistStats);
-router.get('/recommendations', authMiddleware, ProductWishlistControllers.getWishlistRecommendations);
-router.get('/priority/:priority', authMiddleware, priorityValidation, ProductWishlistControllers.getWishlistByPriority);
-router.get('/check/:productId', authMiddleware, productIdValidation, ProductWishlistControllers.isInWishlist);
-router.put('/:productId', authMiddleware, productIdValidation, updateWishlistValidation, ProductWishlistControllers.updateWishlistItem);
-router.delete('/:productId', authMiddleware, productIdValidation, ProductWishlistControllers.removeFromWishlist);
-router.post('/:productId/move-to-cart', authMiddleware, productIdValidation, ProductWishlistControllers.moveToCart);
-router.delete('/', authMiddleware, ProductWishlistControllers.clearWishlist);
+// All routes require authentication and product permissions
+router.post('/', 
+  authMiddleware, 
+  requirePermission('products', 'create'), 
+  addToWishlistValidation, 
+  ProductWishlistControllers.addToWishlist
+);
+router.get('/', 
+  authMiddleware, 
+  requirePermission('products', 'read'), 
+  wishlistQueryValidation, 
+  ProductWishlistControllers.getWishlist
+);
+router.get('/stats', 
+  authMiddleware, 
+  requirePermission('products', 'read'), 
+  ProductWishlistControllers.getWishlistStats
+);
+router.get('/recommendations', 
+  authMiddleware, 
+  requirePermission('products', 'read'), 
+  ProductWishlistControllers.getWishlistRecommendations
+);
+router.get('/priority/:priority', 
+  authMiddleware, 
+  requirePermission('products', 'read'), 
+  priorityValidation, 
+  ProductWishlistControllers.getWishlistByPriority
+);
+router.get('/check/:productId', 
+  authMiddleware, 
+  requirePermission('products', 'read'), 
+  productIdValidation, 
+  ProductWishlistControllers.isInWishlist
+);
+router.put('/:productId', 
+  authMiddleware, 
+  requirePermission('products', 'update'), 
+  productIdValidation, 
+  updateWishlistValidation, 
+  ProductWishlistControllers.updateWishlistItem
+);
+router.delete('/:productId', 
+  authMiddleware, 
+  requirePermission('products', 'delete'), 
+  productIdValidation, 
+  ProductWishlistControllers.removeFromWishlist
+);
+router.post('/:productId/move-to-cart', 
+  authMiddleware, 
+  requirePermission('products', 'update'), 
+  productIdValidation, 
+  ProductWishlistControllers.moveToCart
+);
+router.delete('/', 
+  authMiddleware, 
+  requirePermission('products', 'delete'), 
+  ProductWishlistControllers.clearWishlist
+);
 
 export const ProductWishlistRoutes = router;

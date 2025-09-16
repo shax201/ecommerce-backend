@@ -1,6 +1,7 @@
 import express from 'express';
 import { OrderAnalyticsControllers } from './orderAnalytics.controller';
 import { authMiddleware } from '../../middlewares/auth.middleware';
+import { requirePermission } from '../../middlewares/permission.middleware';
 import { query } from 'express-validator';
 
 const router = express.Router();
@@ -25,12 +26,40 @@ const dateRangeValidation = [
     .withMessage('Group by must be daily, weekly, or monthly'),
 ];
 
-// All analytics routes require authentication
-router.get('/overview', authMiddleware, dateRangeValidation, OrderAnalyticsControllers.getOrderAnalytics);
-router.get('/trends', authMiddleware, dateRangeValidation, OrderAnalyticsControllers.getSalesTrends);
-router.get('/customers', authMiddleware, OrderAnalyticsControllers.getCustomerAnalytics);
-router.get('/products', authMiddleware, OrderAnalyticsControllers.getProductAnalytics);
-router.get('/revenue', authMiddleware, dateRangeValidation, OrderAnalyticsControllers.getRevenueReport);
-router.get('/dashboard', authMiddleware, dateRangeValidation, OrderAnalyticsControllers.getDashboardData);
+// All analytics routes require authentication and orders read permission
+router.get('/overview', 
+  authMiddleware, 
+  requirePermission('orders', 'read'), 
+  dateRangeValidation, 
+  OrderAnalyticsControllers.getOrderAnalytics
+);
+router.get('/trends', 
+  authMiddleware, 
+  requirePermission('orders', 'read'), 
+  dateRangeValidation, 
+  OrderAnalyticsControllers.getSalesTrends
+);
+router.get('/customers', 
+  authMiddleware, 
+  requirePermission('orders', 'read'), 
+  OrderAnalyticsControllers.getCustomerAnalytics
+);
+router.get('/products', 
+  authMiddleware, 
+  requirePermission('orders', 'read'), 
+  OrderAnalyticsControllers.getProductAnalytics
+);
+router.get('/revenue', 
+  authMiddleware, 
+  requirePermission('orders', 'read'), 
+  dateRangeValidation, 
+  OrderAnalyticsControllers.getRevenueReport
+);
+router.get('/dashboard', 
+  authMiddleware, 
+  requirePermission('orders', 'read'), 
+  dateRangeValidation, 
+  OrderAnalyticsControllers.getDashboardData
+);
 
 export const OrderAnalyticsRoutes = router;

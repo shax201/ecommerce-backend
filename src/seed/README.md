@@ -4,6 +4,15 @@ This directory contains seed scripts for populating the database with default da
 
 ## Available Seed Scripts
 
+### Admin Seed (`seedAdmin.ts`)
+
+Seeds the database with admin users and permission system including:
+
+- **Admin Users**: Super Admin, Manager, and Viewer accounts
+- **Permissions**: All CRUD permissions for system resources
+- **Roles**: Super Admin, Admin, Manager, and Viewer roles
+- **Role Assignments**: Automatic role assignment to admin users
+
 ### Content Seed (`seedContent.ts`)
 
 Seeds the content management system with default data including:
@@ -21,15 +30,22 @@ Seeds the content management system with default data including:
 2. Set up your `.env` file with the correct `DATABASE_URL`
 3. Install dependencies: `bun install`
 
-### Running the Content Seed Script
+### Running the Seed Scripts
 
 ```bash
-# Using bun (recommended)
+# Seed admin users and permissions
+bun run seed:admin
+
+# Seed content data
 bun run seed:content
 
+# Seed everything (admin + content)
+bun run seed:all
+
 # Or using npm/pnpm
+npm run seed:admin
 npm run seed:content
-pnpm run seed:content
+npm run seed:all
 ```
 
 ### What the Script Does

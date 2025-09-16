@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { OrderServices } from './orderHistory.service';
 import { AuthRequest } from '../../../middlewares/auth.middleware';
-import ClientModel from '../../user/client/client.model';
+import { UserManagementService } from '../../user/userManagement/userManagement.service';
 import { decodeBearerTokenAndGetUserId } from '../../../utils/jwt';
 
 const getOrderHistory = async (req: Request, res: Response) => {
@@ -74,8 +74,8 @@ const createOrder = async (req: AuthRequest, res: Response) => {
       userId = req.user?.userId as string | undefined;
     }
     if (!userId && req.user?.email) {
-      const client = await ClientModel.findOne({ email: req.user.email }).select('_id');
-      if (client?._id) userId = String(client._id);
+      const user = await UserManagementService.getUserByEmail(req.user.email);
+      if (user?._id) userId = String(user._id);
     }
 
     if (!userId) {
@@ -230,9 +230,9 @@ export const OrderControllers = {
       if (!userId) {
         const email = (req.user?.email as string | undefined)?.trim();
         if (email) {
-          const client = await ClientModel.findOne({ email }).select('_id').lean();
-          if (client?._id) {
-            userId = String(client._id);
+          const user = await UserManagementService.getUserByEmail(email);
+          if (user?._id) {
+            userId = String(user._id);
           }
         }
       }
@@ -276,26 +276,26 @@ export const OrderControllers = {
       }
 
       if (!userId && req.user?.email) {
-        const client = await ClientModel.findOne({ email: req.user.email }).select('_id');
-        if (client?._id) userId = String(client._id);
+        const user = await UserManagementService.getUserByEmail(req.user.email);
+        if (user?._id) userId = String(user._id);
       }
 
       if (!userId) {
         return res.status(401).json({ success: false, message: 'Unauthorized' });
       }
 
-      const [clientDoc, analytics] = await Promise.all([
-        ClientModel.findById(userId).lean(),
+      const [userDoc, analytics] = await Promise.all([
+        UserManagementService.getUserById(userId),
         OrderServices.getClientAnalytics(userId),
       ]);
 
-      const name = [clientDoc?.firstName, clientDoc?.lastName]
+      const name = [userDoc?.firstName, userDoc?.lastName]
         .filter(Boolean)
         .join(' ')
         .trim();
 
-      const joinDate = clientDoc?.createdAt
-        ? new Date(clientDoc.createdAt).toISOString().slice(0, 10)
+      const joinDate = userDoc?.createdAt
+        ? new Date(userDoc.createdAt).toISOString().slice(0, 10)
         : undefined;
 
       const membershipTier = (() => {

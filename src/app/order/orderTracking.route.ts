@@ -1,6 +1,7 @@
 import express from 'express';
 import { OrderTrackingControllers } from './orderTracking.controller';
 import { authMiddleware } from '../../middlewares/auth.middleware';
+import { requirePermission } from '../../middlewares/permission.middleware';
 import { param, query, body } from 'express-validator';
 
 const router = express.Router();
@@ -40,13 +41,34 @@ const updateStatusValidation = [
     .withMessage('Notes must be less than 500 characters'),
 ];
 
-// Public routes
+// Public routes (for customers to track their orders)
 router.get('/track/:id', orderIdValidation, OrderTrackingControllers.getOrderTracking);
-router.get('/status/:status', statusValidation, paginationValidation, OrderTrackingControllers.getOrdersByStatus);
-router.get('/stats', OrderTrackingControllers.getTrackingStats);
+router.get('/status/:status', 
+  authMiddleware, 
+  requirePermission('orders', 'read'), 
+  statusValidation, 
+  paginationValidation, 
+  OrderTrackingControllers.getOrdersByStatus
+);
+router.get('/stats', 
+  authMiddleware, 
+  requirePermission('orders', 'read'), 
+  OrderTrackingControllers.getTrackingStats
+);
 
 // Protected routes
-router.post('/bulk', authMiddleware, bulkTrackingValidation, OrderTrackingControllers.getBulkTracking);
-router.patch('/:id/status', authMiddleware, orderIdValidation, updateStatusValidation, OrderTrackingControllers.updateOrderStatus);
+router.post('/bulk', 
+  authMiddleware, 
+  requirePermission('orders', 'read'), 
+  bulkTrackingValidation, 
+  OrderTrackingControllers.getBulkTracking
+);
+router.patch('/:id/status', 
+  authMiddleware, 
+  requirePermission('orders', 'update'), 
+  orderIdValidation, 
+  updateStatusValidation, 
+  OrderTrackingControllers.updateOrderStatus
+);
 
 export const OrderTrackingRoutes = router;

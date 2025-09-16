@@ -1,6 +1,7 @@
 import express from 'express';
 import { ProductReviewControllers } from './productReview.controller';
 import { authMiddleware } from '../../../middlewares/auth.middleware';
+import { requirePermission } from '../../../middlewares/permission.middleware';
 import { param, query, body } from 'express-validator';
 
 const router = express.Router();
@@ -63,13 +64,46 @@ router.get('/stats/:productId', productIdValidation, ProductReviewControllers.ge
 router.get('/:reviewId', reviewIdValidation, ProductReviewControllers.getReviewById);
 
 // User routes (require authentication)
-router.post('/', authMiddleware, createReviewValidation, ProductReviewControllers.createReview);
-router.put('/:reviewId', authMiddleware, reviewIdValidation, updateReviewValidation, ProductReviewControllers.updateReview);
-router.delete('/:reviewId', authMiddleware, reviewIdValidation, ProductReviewControllers.deleteReview);
-router.post('/:reviewId/helpful', reviewIdValidation, helpfulValidation, ProductReviewControllers.markHelpful);
+router.post('/', 
+  authMiddleware, 
+  requirePermission('products', 'create'), 
+  createReviewValidation, 
+  ProductReviewControllers.createReview
+);
+router.put('/:reviewId', 
+  authMiddleware, 
+  requirePermission('products', 'update'), 
+  reviewIdValidation, 
+  updateReviewValidation, 
+  ProductReviewControllers.updateReview
+);
+router.delete('/:reviewId', 
+  authMiddleware, 
+  requirePermission('products', 'delete'), 
+  reviewIdValidation, 
+  ProductReviewControllers.deleteReview
+);
+router.post('/:reviewId/helpful', 
+  authMiddleware, 
+  reviewIdValidation, 
+  helpfulValidation, 
+  ProductReviewControllers.markHelpful
+);
 
-// Admin routes (require authentication)
-router.patch('/:reviewId/status', authMiddleware, reviewIdValidation, statusValidation, ProductReviewControllers.updateReviewStatus);
-router.post('/:reviewId/response', authMiddleware, reviewIdValidation, adminResponseValidation, ProductReviewControllers.addAdminResponse);
+// Admin routes (require authentication and admin permissions)
+router.patch('/:reviewId/status', 
+  authMiddleware, 
+  requirePermission('products', 'update'), 
+  reviewIdValidation, 
+  statusValidation, 
+  ProductReviewControllers.updateReviewStatus
+);
+router.post('/:reviewId/response', 
+  authMiddleware, 
+  requirePermission('products', 'update'), 
+  reviewIdValidation, 
+  adminResponseValidation, 
+  ProductReviewControllers.addAdminResponse
+);
 
 export const ProductReviewRoutes = router;

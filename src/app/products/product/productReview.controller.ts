@@ -3,7 +3,7 @@ import { ProductReviewService, CreateReviewData, UpdateReviewData, ReviewFilters
 import { OrderErrorHandler, asyncHandler } from '../../order/orderErrorHandler';
 import { AuthRequest } from '../../../middlewares/auth.middleware';
 import { decodeBearerTokenAndGetUserId } from '../../../utils/jwt';
-import ClientModel from '../../user/client/client.model';
+import { UserManagementService } from '../../user/userManagement/userManagement.service';
 
 const createReview = asyncHandler(async (req: AuthRequest, res: Response) => {
   let userId = await decodeBearerTokenAndGetUserId(req.headers.authorization);
@@ -11,8 +11,8 @@ const createReview = asyncHandler(async (req: AuthRequest, res: Response) => {
     userId = req.user?.userId as string | undefined;
   }
   if (!userId && req.user?.email) {
-    const client = await ClientModel.findOne({ email: req.user.email }).select('_id');
-    if (client?._id) userId = String(client._id);
+    const user = await UserManagementService.getUserByEmail(req.user.email);
+    if (user?._id) userId = String(user._id);
   }
 
   if (!userId) {
@@ -129,8 +129,8 @@ const updateReview = asyncHandler(async (req: AuthRequest, res: Response) => {
     userId = req.user?.userId as string | undefined;
   }
   if (!userId && req.user?.email) {
-    const client = await ClientModel.findOne({ email: req.user.email }).select('_id');
-    if (client?._id) userId = String(client._id);
+    const user = await UserManagementService.getUserByEmail(req.user.email);
+    if (user?._id) userId = String(user._id);
   }
 
   if (!userId) {
@@ -190,8 +190,8 @@ const deleteReview = asyncHandler(async (req: AuthRequest, res: Response) => {
     userId = req.user?.userId as string | undefined;
   }
   if (!userId && req.user?.email) {
-    const client = await ClientModel.findOne({ email: req.user.email }).select('_id');
-    if (client?._id) userId = String(client._id);
+    const user = await UserManagementService.getUserByEmail(req.user.email);
+    if (user?._id) userId = String(user._id);
   }
 
   if (!userId) {

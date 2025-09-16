@@ -7,6 +7,7 @@ export type TAdmin = {
     email: string;
     password: string;
     permission?: object;
+    roles?: Types.ObjectId[];
     status: boolean;
     image?: string;
     createdAt?: Date;

@@ -1,6 +1,7 @@
 import express from 'express';
 import { ProductImportExportControllers, uploadMiddleware } from './productImportExport.controller';
 import { authMiddleware, authorizeRoles } from '../../../middlewares/auth.middleware';
+import { requirePermission } from '../../../middlewares/permission.middleware';
 import { query, param } from 'express-validator';
 
 const router = express.Router();
@@ -23,16 +24,48 @@ const templateQueryValidation = [
 ];
 
 // Public routes
-router.get('/export', exportQueryValidation, ProductImportExportControllers.exportProducts);
-router.get('/template', templateQueryValidation, ProductImportExportControllers.getImportTemplate);
-router.get('/export-options', ProductImportExportControllers.getExportOptions);
+router.get('/export', 
+  authMiddleware, 
+  requirePermission('products', 'read'), 
+  exportQueryValidation, 
+  ProductImportExportControllers.exportProducts
+);
+router.get('/template', 
+  authMiddleware, 
+  requirePermission('products', 'read'), 
+  templateQueryValidation, 
+  ProductImportExportControllers.getImportTemplate
+);
+router.get('/export-options', 
+  authMiddleware, 
+  requirePermission('products', 'read'), 
+  ProductImportExportControllers.getExportOptions
+);
 
-// Protected routes (require authentication)
-router.post('/import', authMiddleware, uploadMiddleware, ProductImportExportControllers.importProducts);
-router.post('/validate', authMiddleware, uploadMiddleware, ProductImportExportControllers.validateImportFile);
+// Protected routes (require authentication and permissions)
+router.post('/import', 
+  authMiddleware, 
+  requirePermission('products', 'create'), 
+  uploadMiddleware, 
+  ProductImportExportControllers.importProducts
+);
+router.post('/validate', 
+  authMiddleware, 
+  requirePermission('products', 'read'), 
+  uploadMiddleware, 
+  ProductImportExportControllers.validateImportFile
+);
 
-// Admin routes (require admin role)
-router.get('/import-history', authMiddleware, authorizeRoles(['admin']), ProductImportExportControllers.getImportHistory);
-router.get('/export-history', authMiddleware, authorizeRoles(['admin']), ProductImportExportControllers.getExportHistory);
+// Admin routes (require admin role and permissions)
+router.get('/import-history', 
+  authMiddleware, 
+  requirePermission('products', 'read'), 
+  ProductImportExportControllers.getImportHistory
+);
+router.get('/export-history', 
+  authMiddleware, 
+  requirePermission('products', 'read'), 
+  ProductImportExportControllers.getExportHistory
+);
 
 export const ProductImportExportRoutes = router;

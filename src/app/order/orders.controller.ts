@@ -4,7 +4,7 @@ import { OrderServices } from './orderHistory/orderHistory.service';
 import { OrderAnalyticsService } from './orderAnalytics.service';
 import { OrderTrackingService } from './orderTracking.service';
 import { AuthRequest } from '../../middlewares/auth.middleware';
-import ClientModel from '../user/client/client.model';
+import { UserManagementService } from '../user/userManagement/userManagement.service';
 import { decodeBearerTokenAndGetUserId } from '../../utils/jwt';
 
 // ===== GET ALL ORDERS (Admin) =====
@@ -70,8 +70,8 @@ export const getUserOrders = async (req: AuthRequest, res: Response) => {
       userId = req.user?.userId as string | undefined;
     }
     if (!userId && req.user?.email) {
-      const client = await ClientModel.findOne({ email: req.user.email }).select('_id');
-      if (client?._id) userId = String(client._id);
+      const user = await UserManagementService.getUserByEmail(req.user.email as string);
+      if (user?._id) userId = String(user._id);
     }
 
     // If userId is provided in params, use it (for admin viewing user orders)
@@ -110,8 +110,8 @@ export const createOrder = async (req: AuthRequest, res: Response) => {
       userId = req.user?.userId as string | undefined;
     }
     if (!userId && req.user?.email) {
-      const client = await ClientModel.findOne({ email: req.user.email }).select('_id');
-      if (client?._id) userId = String(client._id);
+      const user = await UserManagementService.getUserByEmail(req.user.email as string);
+      if (user?._id) userId = String(user._id);
     }
 
     if (!userId) {

@@ -1,6 +1,7 @@
 import express from 'express';
 import { ProductAnalyticsControllers } from './productAnalytics.controller';
 import { authMiddleware } from '../../../middlewares/auth.middleware';
+import { requirePermission } from '../../../middlewares/permission.middleware';
 import { param, query, body } from 'express-validator';
 
 const router = express.Router();
@@ -28,9 +29,18 @@ const purchaseValidation = [
 // Public routes (no authentication required)
 router.get('/analytics', analyticsQueryValidation, ProductAnalyticsControllers.getProductAnalytics);
 router.get('/performance', analyticsQueryValidation, ProductAnalyticsControllers.getProductPerformanceMetrics);
-router.get('/inventory-report', ProductAnalyticsControllers.getInventoryReport);
+router.get('/inventory-report', 
+  authMiddleware, 
+  requirePermission('products', 'read'), 
+  ProductAnalyticsControllers.getInventoryReport
+);
 router.get('/top-selling', analyticsQueryValidation, ProductAnalyticsControllers.getTopSellingProducts);
-router.get('/low-stock', analyticsQueryValidation, ProductAnalyticsControllers.getLowStockProducts);
+router.get('/low-stock', 
+  authMiddleware, 
+  requirePermission('products', 'read'), 
+  analyticsQueryValidation, 
+  ProductAnalyticsControllers.getLowStockProducts
+);
 router.get('/recommendations', analyticsQueryValidation, ProductAnalyticsControllers.getProductRecommendations);
 router.get('/:productId/related', productIdValidation, analyticsQueryValidation, ProductAnalyticsControllers.getRelatedProducts);
 

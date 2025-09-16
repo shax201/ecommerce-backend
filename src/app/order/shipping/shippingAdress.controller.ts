@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { ShippingAddressServices } from './shippingAdress.service';
 import { AuthRequest } from '../../../middlewares/auth.middleware';
 import { decodeBearerTokenAndGetUserId } from '../../../utils/jwt';
-import ClientModel from '../../user/client/client.model';
+import { UserManagementService } from '../../user/userManagement/userManagement.service';
 
 const createShippingAddress = async (req: AuthRequest, res: Response) => {
     try {
@@ -11,8 +11,8 @@ const createShippingAddress = async (req: AuthRequest, res: Response) => {
         userId = req.user?.userId as string | undefined;
       }
       if (!userId && req.user?.email) {
-        const client = await ClientModel.findOne({ email: req.user.email }).select('_id');
-        if (client?._id) userId = String(client._id);
+        const user = await UserManagementService.getUserByEmail(req.user.email);
+        if (user?._id) userId = String(user._id);
       }
 
       if (!userId) {
@@ -131,8 +131,8 @@ const updateShippingAddress = async (req: Request, res: Response) => {
         userId = req.user?.userId as string | undefined;
       }
       if (!userId && req.user?.email) {
-        const client = await ClientModel.findOne({ email: req.user.email }).select('_id');
-        if (client?._id) userId = String(client._id);
+        const user = await UserManagementService.getUserByEmail(req.user.email);
+        if (user?._id) userId = String(user._id);
       }
 
       if (!userId) {

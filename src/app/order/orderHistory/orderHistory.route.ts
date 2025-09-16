@@ -1,6 +1,7 @@
 import express from 'express';
 import { OrderControllers } from './orderHistory.controller';
 import { authMiddleware } from '../../../middlewares/auth.middleware';
+import { requirePermission } from '../../../middlewares/permission.middleware';
 import { 
   createOrderValidation, 
   updateOrderValidation, 
@@ -11,18 +12,56 @@ import {
 
 const router = express.Router();
 
-// Public routes (admin only)
-router.get('/', OrderControllers.getOrderHistory);
-router.get('/:id', orderIdValidation, OrderControllers.getOrderHistoryById);
+// Admin routes (require orders read permission)
+router.get('/', 
+  authMiddleware, 
+  requirePermission('orders', 'read'), 
+  OrderControllers.getOrderHistory
+);
+router.get('/:id', 
+  authMiddleware, 
+  requirePermission('orders', 'read'), 
+  orderIdValidation, 
+  OrderControllers.getOrderHistoryById
+);
 
-// Protected routes (authenticated users)
-router.post('/', authMiddleware, createOrderValidation, OrderControllers.createOrder);
-router.put('/:id', authMiddleware, updateOrderValidation, OrderControllers.updateOrder);
-router.delete('/:id', authMiddleware, orderIdValidation, OrderControllers.deleteOrder);
-router.patch('/:id/status', authMiddleware, updateOrderStatusValidation, OrderControllers.updateOrderStatus);
+// Protected routes (authenticated users with orders permissions)
+router.post('/', 
+  authMiddleware, 
+  requirePermission('orders', 'create'), 
+  createOrderValidation, 
+  OrderControllers.createOrder
+);
+router.put('/:id', 
+  authMiddleware, 
+  requirePermission('orders', 'update'), 
+  updateOrderValidation, 
+  OrderControllers.updateOrder
+);
+router.delete('/:id', 
+  authMiddleware, 
+  requirePermission('orders', 'delete'), 
+  orderIdValidation, 
+  OrderControllers.deleteOrder
+);
+router.patch('/:id/status', 
+  authMiddleware, 
+  requirePermission('orders', 'update'), 
+  updateOrderStatusValidation, 
+  OrderControllers.updateOrderStatus
+);
 
 // User-specific routes
-router.get('/my/orders', authMiddleware, orderQueryValidation, OrderControllers.getMyOrders);
-router.get('/my/analytics', authMiddleware, OrderControllers.getMyAnalytics);
+router.get('/my/orders', 
+  authMiddleware, 
+  requirePermission('orders', 'read'), 
+  orderQueryValidation, 
+  OrderControllers.getMyOrders
+);
+router.get('/my/analytics', 
+  authMiddleware, 
+  requirePermission('orders', 'read'), 
+  OrderControllers.getMyAnalytics
+);
 
 export const OrderRoutes = router;
