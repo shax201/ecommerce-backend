@@ -136,18 +136,44 @@ const loginClient = async (req: Request, res: Response) => {
 
 const getAllClient = async (req: Request, res: Response) => {
     try {
-      // Use user management service to get all clients
+      // Get query parameters for pagination and filtering
+      const { page = 1, limit = 10, search, status, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+      
+      // Use user management service to get all clients with proper filtering
       const result = await UserManagementService.getAllUsers({
         role: 'client',
-        page: 1,
-        limit: 1000 // Get all clients
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        search: search as string,
+        status: status as string,
+        sortBy: sortBy as string,
+        sortOrder: sortOrder as 'asc' | 'desc'
       });
       
-      if (result.users.length > 0) {
+      // Convert user management format to client format
+      const clients = result.users.map(user => {
+        const status = user.status === 'active';
+        console.log(`Client ${user.email}: status="${user.status}" -> boolean=${status}`);
+        return {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role,
+          phone: user.phone ? parseInt(user.phone) : 0,
+          address: user.address ? user.address.street : '',
+          status: status, // Convert string to boolean
+          image: user.profileImage,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        };
+      });
+      
+      if (clients.length > 0) {
         res.status(200).json({
           success: true,
           message: 'Clients fetched successfully',
-          data: result.users,
+          data: clients,
           pagination: result.pagination,
         });
       } else {
@@ -179,13 +205,28 @@ const getClientById = async (req: Request, res: Response) => {
         });
       }
       
-      const result = await UserManagementService.getUserById(trimmedId);
+      const user = await UserManagementService.getUserById(trimmedId);
       
-      if (result && result.role === 'client') {
+      if (user && user.role === 'client') {
+        // Convert user management format to client format
+        const client = {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role,
+          phone: user.phone ? parseInt(user.phone) : 0,
+          address: user.address ? user.address.street : '',
+          status: user.status === 'active', // Convert string to boolean
+          image: user.profileImage,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        };
+        
         res.status(200).json({
           success: true,
           message: 'Client fetched successfully',
-          data: result,
+          data: client,
         });
       } else {
         res.status(404).json({
@@ -218,18 +259,37 @@ const updateClient = async (req: Request, res: Response) => {
         });
       }
       
+      console.log('Update client request body:', req.body);
+      
       // Use user management validation for updates
       const parsedData = await UserManagementValidation.updateUserValidationSchema.parseAsync({
         body: req.body,
       });
       
-      const result = await UserManagementService.updateUser(trimmedId, parsedData.body);
+      console.log('Parsed data:', parsedData.body);
       
-      if (result && result.role === 'client') {
+      const user = await UserManagementService.updateUser(trimmedId, parsedData.body);
+      
+      if (user && user.role === 'client') {
+        // Convert user management format to client format
+        const client = {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role,
+          phone: user.phone ? parseInt(user.phone) : 0,
+          address: user.address ? user.address.street : '',
+          status: user.status === 'active', // Convert string to boolean
+          image: user.profileImage,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        };
+        
         res.status(200).json({
           success: true,
           message: 'Client updated successfully',
-          data: result,
+          data: client,
         });
       } else {
         res.status(404).json({
@@ -449,8 +509,10 @@ const bulkDeleteClients = async (req: Request, res: Response) => {
 
 const getClientStats = async (req: Request, res: Response) => {
     try {
+      console.log('Getting client stats...');
       // Get all user stats first
       const allUserStats = await UserManagementService.getUserStats();
+      console.log('All user stats:', allUserStats);
       
       // Filter to get only client-specific stats
       const clientStats = {
@@ -490,11 +552,13 @@ const getClientStats = async (req: Request, res: Response) => {
         }),
       ]);
 
-      // Update the stats with actual counts
-      clientStats.activeClients = activeClients.pagination.total;
-      clientStats.inactiveClients = inactiveClients.pagination.total;
-      clientStats.newClientsThisMonth = newClientsThisMonth.pagination.total;
-      clientStats.newClientsThisWeek = newClientsThisWeek.pagination.total;
+      // Update the stats with actual counts from pagination
+      clientStats.activeClients = activeClients.pagination?.total || 0;
+      clientStats.inactiveClients = inactiveClients.pagination?.total || 0;
+      clientStats.newClientsThisMonth = newClientsThisMonth.pagination?.total || 0;
+      clientStats.newClientsThisWeek = newClientsThisWeek.pagination?.total || 0;
+
+      console.log('Final client stats:', clientStats);
 
       res.status(200).json({
         success: true,
