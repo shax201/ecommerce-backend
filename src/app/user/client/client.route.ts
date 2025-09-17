@@ -46,4 +46,17 @@ router.delete('/:id',
   ClientsControllers.deleteClient
 );
 
+// Bulk operations
+router.put('/bulk/status', 
+  authMiddleware, 
+  requirePermission('users', 'update'), 
+  ClientsControllers.bulkUpdateClientStatus
+);
+
+router.delete('/bulk/delete', 
+  authMiddleware, 
+  requirePermission('users', 'delete'), 
+  ClientsControllers.bulkDeleteClients
+);
+
 export const ClientsRoutes = router;

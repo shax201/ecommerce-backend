@@ -378,6 +378,75 @@ const deleteClient = async (req: Request, res: Response) => {
     }
   };
 
+const bulkUpdateClientStatus = async (req: Request, res: Response) => {
+    try {
+      const { ids, status } = req.body;
+      
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Client IDs array is required and must not be empty',
+        });
+      }
+      
+      if (typeof status !== 'boolean') {
+        return res.status(400).json({
+          success: false,
+          message: 'Status must be a boolean value',
+        });
+      }
+      
+      // Use user management bulk operation
+      const result = await UserManagementService.bulkOperation({
+        userIds: ids,
+        operation: status ? 'activate' : 'deactivate',
+      });
+      
+      res.status(200).json({
+        success: true,
+        message: `Successfully ${status ? 'activated' : 'deactivated'} ${result.success.length} client(s)`,
+        data: result,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Something went wrong',
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+    }
+  };
+
+const bulkDeleteClients = async (req: Request, res: Response) => {
+    try {
+      const { ids } = req.body;
+      
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Client IDs array is required and must not be empty',
+        });
+      }
+      
+      // Use user management bulk operation
+      const result = await UserManagementService.bulkOperation({
+        userIds: ids,
+        operation: 'delete',
+      });
+      
+      res.status(200).json({
+        success: true,
+        message: `Successfully deleted ${result.success.length} client(s)`,
+        data: result,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Something went wrong',
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+    }
+  };
+
 export const ClientsControllers = {
     createClient,
     loginClient,
@@ -385,7 +454,9 @@ export const ClientsControllers = {
     getClientById,
     updateClient,
     updateClientProfile,
-    deleteClient
+    deleteClient,
+    bulkUpdateClientStatus,
+    bulkDeleteClients
 };
 
 
