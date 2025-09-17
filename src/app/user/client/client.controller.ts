@@ -396,7 +396,10 @@ const deleteClient = async (req: Request, res: Response) => {
       const { id } = req.params;
       const trimmedId = id.trim();
       
+      console.log('Delete client request for ID:', trimmedId);
+      
       if (!mongoose.Types.ObjectId.isValid(trimmedId)) {
+        console.log('Invalid client ID format:', trimmedId);
         return res.status(400).json({
           success: false,
           message: 'Invalid client ID format',
@@ -406,7 +409,10 @@ const deleteClient = async (req: Request, res: Response) => {
       
       // First check if user exists and is a client
       const user = await UserManagementService.getUserById(trimmedId);
+      console.log('Found user:', user ? { id: user._id, role: user.role } : 'null');
+      
       if (!user || user.role !== 'client') {
+        console.log('Client not found or not a client role');
         return res.status(404).json({
           success: false,
           message: 'Client not found',
@@ -415,6 +421,7 @@ const deleteClient = async (req: Request, res: Response) => {
       }
       
       const result = await UserManagementService.deleteUser(trimmedId);
+      console.log('Delete result:', result);
       
       if (result) {
         res.status(200).json({
@@ -430,6 +437,7 @@ const deleteClient = async (req: Request, res: Response) => {
         });
       }
     } catch (error) {
+      console.error('Error in deleteClient:', error);
       res.status(500).json({
         success: false,
         message: 'Something went wrong',
