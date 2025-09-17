@@ -447,6 +447,69 @@ const bulkDeleteClients = async (req: Request, res: Response) => {
     }
   };
 
+const getClientStats = async (req: Request, res: Response) => {
+    try {
+      // Get all user stats first
+      const allUserStats = await UserManagementService.getUserStats();
+      
+      // Filter to get only client-specific stats
+      const clientStats = {
+        totalClients: allUserStats.clientUsers,
+        activeClients: 0,
+        inactiveClients: 0,
+        newClientsThisMonth: 0,
+        newClientsThisWeek: 0,
+        lastLoginStats: allUserStats.lastLoginStats,
+        // Calculate client-specific stats
+        totalUsers: allUserStats.totalUsers,
+        adminUsers: allUserStats.adminUsers,
+        clientUsers: allUserStats.clientUsers,
+      };
+
+      // Get additional client-specific stats
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - now.getDay());
+      startOfWeek.setHours(0, 0, 0, 0);
+
+      const [activeClients, inactiveClients, newClientsThisMonth, newClientsThisWeek] = await Promise.all([
+        UserManagementService.getAllUsers({ role: 'client', status: 'active', page: 1, limit: 1 }),
+        UserManagementService.getAllUsers({ role: 'client', status: 'inactive', page: 1, limit: 1 }),
+        UserManagementService.getAllUsers({ 
+          role: 'client', 
+          createdAt: { $gte: startOfMonth }, 
+          page: 1, 
+          limit: 1 
+        }),
+        UserManagementService.getAllUsers({ 
+          role: 'client', 
+          createdAt: { $gte: startOfWeek }, 
+          page: 1, 
+          limit: 1 
+        }),
+      ]);
+
+      // Update the stats with actual counts
+      clientStats.activeClients = activeClients.pagination.total;
+      clientStats.inactiveClients = inactiveClients.pagination.total;
+      clientStats.newClientsThisMonth = newClientsThisMonth.pagination.total;
+      clientStats.newClientsThisWeek = newClientsThisWeek.pagination.total;
+
+      res.status(200).json({
+        success: true,
+        message: 'Client statistics fetched successfully',
+        data: clientStats,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Something went wrong',
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+    }
+  };
+
 export const ClientsControllers = {
     createClient,
     loginClient,
@@ -456,7 +519,8 @@ export const ClientsControllers = {
     updateClientProfile,
     deleteClient,
     bulkUpdateClientStatus,
-    bulkDeleteClients
+    bulkDeleteClients,
+    getClientStats
 };
 
 

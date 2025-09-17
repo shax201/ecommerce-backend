@@ -16,6 +16,12 @@ router.get('/',
   ClientsControllers.getAllClient
 );
 
+router.get('/stats', 
+  authMiddleware, 
+  requirePermission('users', 'read'), 
+  ClientsControllers.getClientStats
+);
+
 router.get('/:id', 
   authMiddleware, 
   requirePermission('users', 'read'), 
