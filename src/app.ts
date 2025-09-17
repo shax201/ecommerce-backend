@@ -11,6 +11,7 @@ import { OrderAnalyticsRoutes } from './app/order/orderAnalytics.route';
 import { ClientsRoutes } from './app/user/client/client.route';
 import { AdminRoutes } from './app/user/admin/admin.route';
 import { UserManagementRoutes } from './app/user/userManagement/userManagement.routes';
+import { UserSettingsRoutes } from './app/user/userSettings/userSettings.routes';
 import { CompanyRoutes } from './app/companySetting/companySettings.routes';
 import { ContentRoutes } from './app/content/content.routes';
 import { CouponRoutes } from './app/coupon/coupon.routes';
@@ -52,6 +53,9 @@ app.use('/api/v1/admins', AdminRoutes);
 
 //user management
 app.use('/api/v1/user-management', UserManagementRoutes);
+
+//user settings (for users to manage their own profile)
+app.use('/api/v1/user-settings', UserSettingsRoutes);
 
 //content management
 app.use('/api/v1/content', ContentRoutes);
