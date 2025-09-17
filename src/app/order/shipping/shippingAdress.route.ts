@@ -24,39 +24,39 @@ const shippingAddressValidation = [
 router.post(
   "/",
   authMiddleware,
-  requirePermission('shipping-addresses', 'create'),
+  // requirePermission('shipping-addresses', 'create'),
   shippingAddressValidation,
   ShippingAddressControllers.createShippingAddress
 );
 
 router.get('/', 
   authMiddleware, 
-  requirePermission('shipping-addresses', 'read'), 
+  // requirePermission('shipping-addresses', 'read'), 
   ShippingAddressControllers.getShippingAddress
 );
 
 router.get('/:id', 
   authMiddleware, 
-  requirePermission('shipping-addresses', 'read'), 
+  // requirePermission('shipping-addresses', 'read'), 
   ShippingAddressControllers.getShippingAddressById
 );
 
 router.put("/:id", 
   authMiddleware, 
-  requirePermission('shipping-addresses', 'update'), 
+  // requirePermission('shipping-addresses', 'update'), 
   shippingAddressValidation, 
   ShippingAddressControllers.updateShippingAddress
 );
 
 router.patch("/:id/default", 
   authMiddleware, 
-  requirePermission('shipping-addresses', 'update'), 
+  // requirePermission('shipping-addresses', 'update'), 
   ShippingAddressControllers.setDefaultShippingAddress
 );
 
 router.delete("/:id", 
   authMiddleware, 
-  requirePermission('shipping-addresses', 'delete'), 
+  // requirePermission('shipping-addresses', 'delete'), 
   ShippingAddressControllers.deleteShippingAddress
 );
 

@@ -384,7 +384,7 @@ export class UserManagementService {
 
   // Login user
   static async loginUser(email: string, password: string): Promise<{
-    user: IUserManagement;
+    user: any;
     token: string;
   }> {
     try {
@@ -409,7 +409,7 @@ export class UserManagementService {
       await user.save();
 
       // Generate JWT token
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secret-key');
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'supersecretjwtkey');
       
       const token = await new jose.SignJWT({ 
         userId: String(user._id),
@@ -424,6 +424,7 @@ export class UserManagementService {
       .setExpirationTime(process.env.JWT_EXPIRES_IN || '7d')
       .sign(secret);
 
+      // Use toJSON() which already removes sensitive fields via the model's transform
       return {
         user: user.toJSON(),
         token,

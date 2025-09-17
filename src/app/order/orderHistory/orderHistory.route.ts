@@ -15,12 +15,12 @@ const router = express.Router();
 // Admin routes (require orders read permission)
 router.get('/', 
   authMiddleware, 
-  requirePermission('orders', 'read'), 
+  // requirePermission('orders', 'read'), 
   OrderControllers.getOrderHistory
 );
 router.get('/:id', 
   authMiddleware, 
-  requirePermission('orders', 'read'), 
+  // requirePermission('orders', 'read'), 
   orderIdValidation, 
   OrderControllers.getOrderHistoryById
 );
@@ -28,7 +28,7 @@ router.get('/:id',
 // Protected routes (authenticated users with orders permissions)
 router.post('/', 
   authMiddleware, 
-  requirePermission('orders', 'create'), 
+  // requirePermission('orders', 'create'), 
   createOrderValidation, 
   OrderControllers.createOrder
 );
@@ -54,13 +54,13 @@ router.patch('/:id/status',
 // User-specific routes
 router.get('/my/orders', 
   authMiddleware, 
-  requirePermission('orders', 'read'), 
+  // requirePermission('orders', 'read'),  
   orderQueryValidation, 
   OrderControllers.getMyOrders
 );
 router.get('/my/analytics', 
   authMiddleware, 
-  requirePermission('orders', 'read'), 
+  // requirePermission('orders', 'read'), 
   OrderControllers.getMyAnalytics
 );
 
