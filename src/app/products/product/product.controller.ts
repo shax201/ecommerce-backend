@@ -218,6 +218,14 @@ const getProducts = async (req: Request, res: Response) => {
       ...product,
       id: product._id?.toString?.(),
       _id: undefined,
+      // Ensure analytics field is included with default values if missing
+      analytics: product.analytics || {
+        views: 0,
+        purchases: 0,
+        wishlistCount: 0,
+        averageRating: 0,
+        totalReviews: 0
+      }
     }));
 
     res.status(200).json({
