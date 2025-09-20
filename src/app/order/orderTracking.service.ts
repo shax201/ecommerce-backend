@@ -25,7 +25,7 @@ export class OrderTrackingService {
    */
   static async getOrderTracking(orderId: string): Promise<TrackingInfo | null> {
     const order = await OrderHistoryModel.findById(orderId)
-      .populate('clientID', 'firstName lastName email')
+      .populate('UserManagement', 'firstName lastName email')
       .populate('shipping', 'address city state zip country phone name')
       .lean();
 
@@ -36,7 +36,7 @@ export class OrderTrackingService {
     // Build tracking events from tracking steps
     const events: TrackingEvent[] = order.trackingSteps.map((step, index) => ({
       status: step,
-      timestamp: new Date(order.createdAt.getTime() + (index * 24 * 60 * 60 * 1000)), // Simulate progression
+      timestamp: new Date((order as any).createdAt.getTime() + (index * 24 * 60 * 60 * 1000)), // Simulate progression
       location: this.getLocationForStatus(step),
       notes: this.getNotesForStatus(step),
     }));
@@ -48,7 +48,7 @@ export class OrderTrackingService {
       trackingSteps: order.trackingSteps,
       events,
       estimatedDelivery: order.estimatedDeliveryDate,
-      lastUpdated: order.updatedAt,
+      lastUpdated: (order as any).updatedAt,
     };
   }
 
@@ -68,8 +68,8 @@ export class OrderTrackingService {
       }
 
       // Add new status to tracking steps if it's not already there
-      if (!order.trackingSteps.includes(status)) {
-        order.trackingSteps.push(status);
+      if (!order.trackingSteps.includes(status as 'pending' | 'ordered' | 'processing' | 'shipped' | 'delivered' | 'cancelled')) {
+        order.trackingSteps.push(status as 'pending' | 'ordered' | 'processing' | 'shipped' | 'delivered' | 'cancelled');
       }
 
       // Update order with new status and notes
@@ -100,7 +100,7 @@ export class OrderTrackingService {
     for (const order of orders) {
       const events: TrackingEvent[] = order.trackingSteps.map((step, index) => ({
         status: step,
-        timestamp: new Date(order.createdAt.getTime() + (index * 24 * 60 * 60 * 1000)),
+        timestamp: new Date((order as any).createdAt.getTime() + (index * 24 * 60 * 60 * 1000)),
         location: this.getLocationForStatus(step),
         notes: this.getNotesForStatus(step),
       }));
@@ -112,7 +112,7 @@ export class OrderTrackingService {
         trackingSteps: order.trackingSteps,
         events,
         estimatedDelivery: order.estimatedDeliveryDate,
-        lastUpdated: order.updatedAt,
+        lastUpdated: (order as any).updatedAt,
       });
     }
 
@@ -143,7 +143,7 @@ export class OrderTrackingService {
     for (const order of orders) {
       const events: TrackingEvent[] = order.trackingSteps.map((step, index) => ({
         status: step,
-        timestamp: new Date(order.createdAt.getTime() + (index * 24 * 60 * 60 * 1000)),
+        timestamp: new Date((order as any).createdAt.getTime() + (index * 24 * 60 * 60 * 1000)),
         location: this.getLocationForStatus(step),
         notes: this.getNotesForStatus(step),
       }));
@@ -155,7 +155,7 @@ export class OrderTrackingService {
         trackingSteps: order.trackingSteps,
         events,
         estimatedDelivery: order.estimatedDeliveryDate,
-        lastUpdated: order.updatedAt,
+        lastUpdated: (order as any).updatedAt,
       });
     }
 
@@ -231,6 +231,7 @@ export class OrderTrackingService {
   private static getLocationForStatus(status: string): string {
     const locations: Record<string, string> = {
       'pending': 'Order Processing Center',
+      'ordered': 'Order Confirmed',
       'processing': 'Warehouse',
       'shipped': 'In Transit',
       'delivered': 'Delivered',
@@ -242,6 +243,7 @@ export class OrderTrackingService {
   private static getNotesForStatus(status: string): string {
     const notes: Record<string, string> = {
       'pending': 'Your order has been received and is being prepared',
+      'ordered': 'Your order has been confirmed and is being processed',
       'processing': 'Your order is being processed and packed',
       'shipped': 'Your order has been shipped and is on its way',
       'delivered': 'Your order has been successfully delivered',

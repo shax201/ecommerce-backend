@@ -17,6 +17,8 @@ import { ContentRoutes } from './app/content/content.routes';
 import { CouponRoutes } from './app/coupon/coupon.routes';
 import ReportsRoutes from './app/reports/reports.routes';
 import { PermissionRoutes } from './app/permission/permission.routes';
+import { CourierCredentialsRoutes, CourierOperationsRoutes, CourierOrderRoutes, CourierStatsRoutes } from './app/courier';
+
 
 const app: Application = express();
 
@@ -38,6 +40,14 @@ app.use(cors())
 
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello World!');
+});
+
+// Test endpoint for courier selection (temporary - no auth required)
+app.get('/api/v1/test/couriers', (req: Request, res: Response) => {
+    res.json({
+        success: true,
+        data: ['pathao', 'steadfast']
+    });
 });
 
 
@@ -68,6 +78,13 @@ app.use('/api/v1/reports', ReportsRoutes);
 
 //permission management
 app.use('/api/v1/permissions', PermissionRoutes);
+
+//courier management
+app.use('/api/v1/courier/credentials', CourierCredentialsRoutes);
+app.use('/api/v1/courier/orders', CourierOrderRoutes);
+app.use('/api/v1/courier/operations', CourierOperationsRoutes);
+app.use('/api/v1/courier', CourierStatsRoutes);
+
 
 
 

@@ -9,7 +9,7 @@ const shippingAddressSchema = new Schema<TShippingAddress> ({
     country: { type: String, required: true },
     phone: { type: Number, required: true },
     isDefault: { type: Boolean, default: false },
-    user: { type: Schema.Types.ObjectId, ref: 'Client', required: true },
+    user: { type: Schema.Types.ObjectId, ref: 'UserManagement', required: true },
     name: { type: String, required: true }, // Add name field for address
 }, {
     timestamps: true

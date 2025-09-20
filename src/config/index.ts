@@ -8,4 +8,14 @@ export const config = {
   database_url: process.env.DATABASE_URL,
   jwt_secret: process.env.JWT_SECRET || 'supersecretjwtkey',
   jwt_expires_in: process.env.JWT_EXPIRES_IN || '7d',
+  pathao: {
+    client_id: process.env.PATHAO_CLIENT_ID,
+    client_secret: process.env.PATHAO_CLIENT_SECRET,
+    username: process.env.PATHAO_USERNAME,
+    password: process.env.PATHAO_PASSWORD,
+    environment: process.env.PATHAO_ENVIRONMENT || 'sandbox',
+    api_base_url: process.env.PATHAO_ENVIRONMENT === 'production' 
+      ? 'https://api-hermes.pathao.com' 
+      : 'https://courier-api-sandbox.pathao.com',
+  },
 };

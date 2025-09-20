@@ -1,4 +1,43 @@
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+import path from 'path';
+import { SimpleProductModel } from './simpleProduct.model';
+
+// Load environment variables
+dotenv.config({ path: path.join(process.cwd(), '.env') });
+
+const DATABASE_URL = process.env.DATABASE_URL || 'mongodb://localhost:27017/ecommerce';
+
+// Helper function to create complete product data
+function createProductData(baseData: any, index: number) {
+  const sku = `PRD-${String(index + 1).padStart(3, '0')}`;
+  const barcode = `1234567890${String(index + 1).padStart(3, '0')}`;
+  
+  return {
+    ...baseData,
+    shortDescription: baseData.shortDescription || baseData.description.substring(0, 100),
+    costPrice: baseData.costPrice || Math.round(baseData.regularPrice * 0.5),
+    sku,
+    barcode,
+    weight: baseData.weight || 0.3,
+    dimensions: baseData.dimensions || {
+      length: 80,
+      width: 60,
+      height: 2,
+      unit: "cm"
+    },
+    inventory: baseData.inventory || {
+      totalStock: 50,
+      reservedStock: 0,
+      availableStock: 50,
+      lowStockThreshold: 10,
+      trackInventory: true
+    },
+    status: baseData.status || "active",
+    featured: baseData.featured || false,
+    tags: baseData.tags || ["clothing", "fashion"]
+  };
+}
 
 const productsData = [
   {
@@ -15,6 +54,8 @@ const productsData = [
     catagory: ["66c1b4b5a1b2c3d4e5f6a7b8"],
     color: ["66c1b4b5a1b2c3d4e5f6c111", "66c1b4b5a1b2c3d4e5f6c112"],
     size: ["66c1b4b5a1b2c3d4e5f6d221", "66c1b4b5a1b2c3d4e5f6d222"],
+    featured: true,
+    tags: ["cotton", "casual", "t-shirt", "comfortable"],
     productType: "top_selling",
   },
   {
@@ -127,37 +168,59 @@ const productsData = [
   }
 ];
 
-async function seedProducts() {
+console.log('🚀 Starting product seeding process...');
+console.log('=====================================');
+
+// Main seeding function
+async function seedProducts(): Promise<void> {
   try {
-    console.log('Starting to seed products...');
+    // Connect to MongoDB
+    console.log('🔌 Connecting to MongoDB...');
+    await mongoose.connect(DATABASE_URL);
+    console.log('✅ Connected to MongoDB successfully\n');
     
-    // for (const product of productsData) {
-      const response = await fetch('http://localhost:5000/api/v1/products/seed_products', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(productsData)
-      });
-
-
-           const result = await response.json();
-
-           console.log('result', result)
-
-      // if (result.success) {
-      //   console.log(`✅ Product seeded: ${product.title}`);
-      // } else {
-      //   console.log('result', result)
-      //   console.error(`❌ Failed to seed product: ${product.title}`, result.message);
-      // }
+    // Clear existing products (optional)
+    console.log('🗑️ Clearing existing products...');
+    await SimpleProductModel.deleteMany({});
+    console.log('✅ Existing products cleared\n');
     
+    // Insert new products
+    console.log('📦 Inserting products...');
+    const completeProductsData = productsData.map((product, index) => createProductData(product, index));
+    const insertedProducts = await SimpleProductModel.insertMany(completeProductsData);
+    console.log(`✅ Successfully inserted ${insertedProducts.length} products\n`);
     
-    console.log('✅ Product seeding completed!');
+    // Display summary
+    console.log('📊 Product Seeding Summary:');
+    console.log('=====================================');
+    console.log(`✅ Total products inserted: ${insertedProducts.length}`);
+    console.log(`✅ Top selling products: ${insertedProducts.filter(p => p.productType === 'top_selling').length}`);
+    console.log(`✅ New arrivals: ${insertedProducts.filter(p => p.productType === 'new_arrival').length}`);
+    console.log(`✅ Featured products: ${insertedProducts.filter(p => p.productType === 'featured').length}`);
+    console.log('\n🎉 Product seeding completed successfully!');
+    
   } catch (error) {
-    console.error('❌ Error seeding products:', error);
+    console.error('❌ Error during product seeding:', error);
+    throw error;
+  } finally {
+    // Close database connection
+    console.log('\n🔌 Closing database connection...');
+    await mongoose.connection.close();
+    console.log('✅ Database connection closed');
   }
 }
 
-// Wait a bit for the server to start, then seed
-setTimeout(seedProducts, 5000);
+// Run the seeding function
+if (require.main === module) {
+  seedProducts()
+    .then(() => {
+      console.log('\n🎉 Product seeding process completed successfully!');
+      process.exit(0);
+    })
+    .catch((error) => {
+      console.error('\n💥 Product seeding process failed:', error);
+      process.exit(1);
+    });
+}
+
+export { seedProducts };

@@ -359,20 +359,30 @@ const createProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const seedProducts = async () => {
+export const seedProducts = async (req: Request, res: Response) => {
   try {
-   
+    const productsData = req.body;
+    
     // Clear old data (optional)
     await ProductModel.deleteMany({});
 
-    // Insert dummy products
-    const items = await ProductModel.insertMany(products);
+    // Insert products from request body
+    const items = await ProductModel.insertMany(productsData);
 
-    console.log("✅ Dummy products inserted:", items.length);
-    return items;
+    console.log("✅ Products inserted:", items.length);
+    
+    res.status(200).json({
+      success: true,
+      message: `Successfully seeded ${items.length} products`,
+      data: items
+    });
   } catch (error) {
     console.error("❌ Error seeding products:", error);
-    throw error;
+    res.status(500).json({
+      success: false,
+      message: "Failed to seed products",
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    });
   }
 };
 
@@ -515,6 +525,7 @@ const getProductsByCategory = async (req: Request, res: Response) => {
 const purchaseProduct = async (req: Request, res: Response) => {
   try {
     const productData: TProductPurchase = req.body;
+    console.log('productData', productData)
     // Ensure clientID is provided
     if (!productData.user) {
       return res.status(400).json({

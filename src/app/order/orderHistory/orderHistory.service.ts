@@ -9,17 +9,17 @@ const createOrderHistory = async (orderData: TCreateOrder) => {
 
  const getOrderHistory = async () => {
     const orderHistory = await OrderHistoryModel.find()
-        .populate('productID', 'title price primaryImage')
-        .populate('clientID', 'firstName lastName email')
-        .populate('shipping', 'address city state zip country phone name');
+        .populate({ path: 'productID', model: 'Product', select: 'title price primaryImage' })
+        .populate({ path: 'clientID', model: 'UserManagement', select: 'firstName lastName email' })
+        .populate({ path: 'shipping', model: 'ShippingAddress', select: 'address city state zip country phone name' });
     return orderHistory;
 };
 
  const getOrderHistoryById = async (id: string) => {
     const orderHistory = await OrderHistoryModel.findById(id)
-        .populate('productID', 'title price primaryImage')
-        .populate('clientID', 'firstName lastName email')
-        .populate('shipping', 'address city state zip country phone name');
+        .populate({ path: 'productID', model: 'Product', select: 'title price primaryImage' })
+        .populate({ path: 'clientID', model: 'UserManagement', select: 'firstName lastName email' })
+        .populate({ path: 'shipping', model: 'ShippingAddress', select: 'address city state zip country phone name' });
     return orderHistory;
 };
 
@@ -29,9 +29,9 @@ const updateOrderHistory = async (id: string, updateData: TUpdateOrder) => {
         updateData,
         { new: true, runValidators: true }
     )
-    .populate('productID', 'title price primaryImage')
-    .populate('clientID', 'firstName lastName email')
-    .populate('shipping', 'address city state zip country phone name');
+    .populate({ path: 'productID', model: 'Product', select: 'title price primaryImage' })
+    .populate({ path: 'clientID', model: 'UserManagement', select: 'firstName lastName email' })
+    .populate({ path: 'shipping', model: 'ShippingAddress', select: 'address city state zip country phone name' });
     
     return orderHistory;
 };
@@ -59,9 +59,9 @@ const updateOrderStatus = async (id: string, status: string, notes?: string) => 
         updateData,
         { new: true, runValidators: true }
     )
-    .populate('productID', 'title price primaryImage')
-    .populate('clientID', 'firstName lastName email')
-    .populate('shipping', 'address city state zip country phone name');
+    .populate({ path: 'productID', model: 'Product', select: 'title price primaryImage' })
+    .populate({ path: 'clientID', model: 'UserManagement', select: 'firstName lastName email' })
+    .populate({ path: 'shipping', model: 'ShippingAddress', select: 'address city state zip country phone name' });
     
     return orderHistory;
 };
@@ -453,9 +453,9 @@ const getOrdersForClient = async (
 // Get orders by user ID
 const getOrderHistoryByUserId = async (userId: string) => {
     const orderHistory = await OrderHistoryModel.find({ clientID: userId })
-        .populate('productID', 'title price primaryImage')
-        .populate('clientID', 'firstName lastName email')
-        .populate('shipping', 'address city state zip country phone name')
+        .populate({ path: 'productID', model: 'Product', select: 'title price primaryImage' })
+        .populate({ path: 'clientID', model: 'UserManagement', select: 'firstName lastName email' })
+        .populate({ path: 'shipping', model: 'ShippingAddress', select: 'address city state zip country phone name' })
         .sort({ createdAt: -1 });
     return orderHistory;
 };

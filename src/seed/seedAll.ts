@@ -4,6 +4,7 @@ import path from 'path';
 import { seedAdmin } from './seedAdmin';
 import { seedUserManagement } from './seedUserManagement';
 import { seedContent } from './seedContent';
+import { seedProducts } from './seedProducts';
 
 // Load environment variables
 dotenv.config({ path: path.join(process.cwd(), '.env') });
@@ -35,12 +36,17 @@ async function seedAll(): Promise<void> {
     console.log('=====================================');
     await seedContent();
     
+    console.log('\n📦 Seeding products...');
+    console.log('=====================================');
+    await seedProducts();
+    
     console.log('\n🎉 Complete database seeding process finished successfully!');
     console.log('=====================================');
     console.log('✅ Admin users created with full permissions (legacy system)');
     console.log('✅ User management system seeded with admin and client users');
     console.log('✅ Default permissions and roles created');
     console.log('✅ Content data seeded');
+    console.log('✅ Products seeded');
     console.log('\n🚀 Your ecommerce application is ready to use!');
     console.log('\n💡 You can now use either the legacy admin system or the new user management system');
     

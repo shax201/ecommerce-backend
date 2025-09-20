@@ -21,13 +21,14 @@ const permissionSchema = new Schema<IPermission>({
       'content', 
       'reports', 
       'company-settings',
-      'shipping-addresses'
+      'shipping-addresses',
+      'courier'
     ]
   },
   action: { 
     type: String, 
     required: true,
-    enum: ['create', 'read', 'update', 'delete']
+    enum: ['create', 'read', 'update', 'delete', 'manage']
   },
   description: { 
     type: String, 

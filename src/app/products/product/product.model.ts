@@ -2,7 +2,7 @@ import mongoose, { Schema } from 'mongoose';
 import { TProduct } from './product.interface';
 
 const productVariantSchema = new Schema({
-  sku: { type: String, required: true, unique: true },
+  sku: { type: String, required: false }, // Make sku optional to avoid unique constraint issues
   color: { type: Schema.Types.ObjectId, ref: 'Color', required: true },
   size: { type: Schema.Types.ObjectId, ref: 'Size', required: true },
   price: { type: Number, required: true },
@@ -46,7 +46,7 @@ const productSchema = new Schema<TProduct>({
   },
   color: [{ type: Schema.Types.ObjectId, ref: 'Color', required: true }],
   size: [{ type: Schema.Types.ObjectId, ref: 'Size', required: true }],
-  variants: [productVariantSchema],
+  // variants: [productVariantSchema], // Temporarily disabled due to unique constraint issues
   sku: { type: String, required: true, unique: true },
   barcode: { type: String, unique: true, sparse: true },
   weight: { type: Number, min: 0 },

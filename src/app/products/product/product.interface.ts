@@ -3,7 +3,7 @@ import { TOrderHistoryBase } from '../../order/orderHistory/orderHistory.interfa
 import { TShippingAddress } from '../../order/shipping/shippingAddress.interface';
 
 export type TProductVariant = {
-    sku: string;
+    sku?: string; // Make sku optional to avoid unique constraint issues
     color: Types.ObjectId;
     size: Types.ObjectId;
     price: number;
@@ -43,7 +43,7 @@ export type TProduct = {
     catagory: Types.ObjectId[];
     color: Types.ObjectId[];
     size: Types.ObjectId[];
-    variants?: TProductVariant[];
+    // variants?: TProductVariant[]; // Temporarily disabled due to unique constraint issues
     sku: string;
     barcode?: string;
     weight?: number;

@@ -13,12 +13,16 @@
     "seed:admin": "bun run src/seed/seedAdmin.ts",
     "seed:user-management": "bun run src/seed/seedUserManagement.ts",
     "seed:content": "bun run src/seed/seedContent.ts",
+    "seed:products": "bun run src/seed/seedProducts.ts",
     "seed:all": "bun run src/seed/seedAll.ts",
     "assign:roles": "bun run src/seed/assignRoles.ts",
     "fix:admin-roles": "bun run src/seed/fixAdminRoles.ts",
     "migrate:users": "bun run scripts/migrate-users.ts migrate",
     "verify:migration": "bun run scripts/migrate-users.ts verify",
-    "rollback:migration": "bun run scripts/migrate-users.ts rollback"
+    "rollback:migration": "bun run scripts/migrate-users.ts rollback",
+    "init:courier": "bun run src/scripts/init-courier-providers.ts",
+    "add:credentials": "bun run src/scripts/add-client-credentials.ts",
+    "list:credentials": "bun run src/scripts/list-credentials.ts"
   },
   "keywords": [],
   "author": "",

@@ -15,7 +15,7 @@ const orderHistorySchema = new Schema<TOrderHistory>({
     },
     clientID: { 
         type: Schema.Types.ObjectId, 
-        ref: 'Client', 
+        ref: 'UserManagement', 
         required: true 
     },
     quantity: { 
@@ -62,7 +62,7 @@ const orderHistorySchema = new Schema<TOrderHistory>({
 
     trackingSteps: { 
         type: [String], 
-        enum: ['pending',"ordered", 'processing', 'shipped', 'delivered', 'canceled'], 
+        enum: ['pending',"ordered", 'processing', 'shipped', 'delivered', 'cancelled'], 
         required: false, 
         default: ['pending'],
         validate: {
@@ -101,7 +101,52 @@ const orderHistorySchema = new Schema<TOrderHistory>({
         type: String,
         enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
         default: 'pending'
-    }
+    },
+    courierBooking: {
+        type: String,
+        enum: ['pathao', 'steadfast'],
+        required: false
+    },
+    courierStatus: {
+        type: String,
+        enum: ['pending', 'picked_up', 'in_transit', 'out_for_delivery', 'delivered', 'failed_delivery', 'returned', 'cancelled'],
+        required: false
+    },
+    consignmentId: {
+        type: String,
+        required: false
+    },
+    trackingNumber: {
+        type: String,
+        required: false
+    },
+    courierDeliveryFee: {
+        type: Number,
+        required: false,
+        min: [0, 'Delivery fee must be non-negative']
+    },
+    courierEstimatedDelivery: {
+        type: Date,
+        required: false
+    },
+    courierTrackingSteps: [{
+        status: {
+            type: String,
+            required: true
+        },
+        timestamp: {
+            type: Date,
+            required: true
+        },
+        location: {
+            type: String,
+            required: false
+        },
+        note: {
+            type: String,
+            required: false
+        }
+    }]
 }, {
     timestamps: true
 });

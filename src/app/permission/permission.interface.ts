@@ -1,6 +1,6 @@
 import { Types } from "mongoose";
 
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete';
+export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage';
 export type PermissionResource = 
   | 'users' 
   | 'products' 
@@ -10,7 +10,8 @@ export type PermissionResource =
   | 'content' 
   | 'reports' 
   | 'company-settings'
-  | 'shipping-addresses';
+  | 'shipping-addresses'
+  | 'courier';
 
 export interface IPermission {
   _id?: string;

@@ -37,7 +37,7 @@ export const requirePermission = (resource: PermissionResource, action: Permissi
         action
       );
 
-      console.log('hasPermission', hasPermission)
+      console.log('resource', resource);
 
       if (!hasPermission.hasPermission) {
         res.status(403).json({

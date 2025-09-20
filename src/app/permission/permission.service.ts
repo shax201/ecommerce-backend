@@ -429,6 +429,13 @@ export class PermissionService {
       { name: 'Read Shipping Addresses', resource: 'shipping-addresses' as PermissionResource, action: 'read' as PermissionAction, description: 'View shipping addresses' },
       { name: 'Update Shipping Addresses', resource: 'shipping-addresses' as PermissionResource, action: 'update' as PermissionAction, description: 'Update shipping addresses' },
       { name: 'Delete Shipping Addresses', resource: 'shipping-addresses' as PermissionResource, action: 'delete' as PermissionAction, description: 'Delete shipping addresses' },
+
+      // Courier permissions
+      { name: 'Create Courier Credentials', resource: 'courier' as PermissionResource, action: 'create' as PermissionAction, description: 'Create courier credentials and configurations' },
+      { name: 'Read Courier Credentials', resource: 'courier' as PermissionResource, action: 'read' as PermissionAction, description: 'View courier credentials and configurations' },
+      { name: 'Update Courier Credentials', resource: 'courier' as PermissionResource, action: 'update' as PermissionAction, description: 'Update courier credentials and configurations' },
+      { name: 'Delete Courier Credentials', resource: 'courier' as PermissionResource, action: 'delete' as PermissionAction, description: 'Delete courier credentials and configurations' },
+      { name: 'Manage Courier Operations', resource: 'courier' as PermissionResource, action: 'manage' as PermissionAction, description: 'Manage courier operations and order integrations' },
     ];
 
     for (const permissionData of defaultPermissions) {
@@ -449,8 +456,10 @@ export class PermissionService {
   static async createDefaultRoles(): Promise<void> {
     // Get all permissions
     const allPermissions = await PermissionModel.find();
+    console.log('allPermissions', allPermissions.length)
     const permissionIds = allPermissions.map(p => p._id);
 
+    console.log('permissionIds', permissionIds.length)
     const defaultRoles = [
       {
         name: 'Super Admin',

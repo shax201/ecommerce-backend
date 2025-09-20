@@ -367,7 +367,7 @@ const purchaseProduct = async (payload: TProductPurchase, couponData?: any) => {
   let shippingAddress:any;
 
   if(!productData.shipping._id){
-    shippingAddress = await ShippingAddressServices.createShippingAddress(productData.shipping);
+    shippingAddress = await ShippingAddressServices.createShippingAddress({...productData.shipping, clientID: new Types.ObjectId(productData.user)});
   }else{
     shippingAddress = await ShippingAddressServices.updateShippingAddress(productData.shipping._id, productData.shipping);
   }

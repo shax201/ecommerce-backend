@@ -52,6 +52,11 @@ const defaultAdminUsers: IUserManagementCreate[] = [
       'orders:read',
       'orders:update',
       'orders:delete',
+      'courier:create',
+      'courier:read',
+      'courier:update',
+      'courier:delete',
+      'courier:manage',
       'reports:read',
       'settings:update'
     ]
@@ -85,6 +90,8 @@ const defaultAdminUsers: IUserManagementCreate[] = [
       'products:update',
       'orders:read',
       'orders:update',
+      'courier:read',
+      'courier:update',
       'reports:read'
     ]
   },
@@ -113,6 +120,7 @@ const defaultAdminUsers: IUserManagementCreate[] = [
       'users:read',
       'products:read',
       'orders:read',
+      'courier:read',
       'reports:read'
     ]
   }
