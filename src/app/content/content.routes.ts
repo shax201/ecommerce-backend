@@ -57,15 +57,15 @@ router.post('/logos',
   LogoController.createLogo
 );
 router.get('/logos', 
-  authMiddleware, 
-  requirePermission('content', 'read'), 
+  // authMiddleware, 
+  // requirePermission('content', 'read'), 
   getLogosValidation, 
   LogoController.getLogos
 );
 router.get('/logos/active/:type', LogoController.getActiveLogosByType); // Public route
 router.get('/logos/:id', 
-  authMiddleware, 
-  requirePermission('content', 'read'), 
+  // authMiddleware, 
+  // requirePermission('content', 'read'), 
   idValidation, 
   LogoController.getLogoById
 );
@@ -90,15 +90,15 @@ router.post('/hero-sections',
   HeroSectionController.createHeroSection
 );
 router.get('/hero-sections', 
-  authMiddleware, 
-  requirePermission('content', 'read'), 
+  // authMiddleware, 
+  // requirePermission('content', 'read'), 
   getHeroSectionsValidation, 
   HeroSectionController.getHeroSections
 );
 router.get('/hero-sections/active', HeroSectionController.getActiveHeroSections); // Public route
 router.get('/hero-sections/:id', 
-  authMiddleware, 
-  requirePermission('content', 'read'), 
+  // authMiddleware, 
+  // requirePermission('content', 'read'), 
   idValidation, 
   HeroSectionController.getHeroSectionById
 );
@@ -128,8 +128,8 @@ router.post('/client-logos',
   ClientLogoController.createClientLogo
 );
 router.get('/client-logos', 
-  authMiddleware, 
-  requirePermission('content', 'read'), 
+  // authMiddleware, 
+  // requirePermission('content', 'read'), 
   getClientLogosValidation, 
   ClientLogoController.getClientLogos
 );
