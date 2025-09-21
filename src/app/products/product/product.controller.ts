@@ -389,7 +389,52 @@ export const seedProducts = async (req: Request, res: Response) => {
 const updateProduct = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const updateProductData = req.body;
+    let updateProductData = req.body;
+    
+    console.log('Update Product Request:', {
+      id,
+      body: updateProductData,
+      colorType: typeof updateProductData.color,
+      colorValue: updateProductData.color
+    });
+    
+    // Parse color field if it's a stringified array
+    if (updateProductData.color && typeof updateProductData.color === 'string') {
+      try {
+        updateProductData.color = JSON.parse(updateProductData.color);
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid color data format. Expected array of color values or IDs.',
+        });
+      }
+    }
+    
+    // Parse size field if it's a stringified array
+    if (updateProductData.size && typeof updateProductData.size === 'string') {
+      try {
+        updateProductData.size = JSON.parse(updateProductData.size);
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid size data format. Expected array of size values or IDs.',
+        });
+      }
+    }
+    
+    // Parse category field if it's a stringified array
+    if (updateProductData.catagory && typeof updateProductData.catagory === 'string') {
+      try {
+        updateProductData.catagory = JSON.parse(updateProductData.catagory);
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid category data format. Expected array of category IDs.',
+        });
+      }
+    }
+    
+    // Validate arrays after parsing
     if (updateProductData.catagory && !Array.isArray(updateProductData.catagory)) {
       return res.status(400).json({
         success: false,
@@ -408,6 +453,13 @@ const updateProduct = async (req: Request, res: Response) => {
         message: 'size must be an array of size values or IDs.',
       });
     }
+    
+    console.log('Parsed Update Data:', {
+      color: updateProductData.color,
+      size: updateProductData.size,
+      catagory: updateProductData.catagory
+    });
+    
     const result = await ProductServices.updateProductIntoDB(
       id,
       updateProductData,

@@ -233,11 +233,72 @@ const getSingleProductFromDB = async (id: string) => {
         path: 'parent',
         model: 'Catagory',
       },
-    })
-    .populate({ path: 'color', model: 'Color', select: 'color -_id' })
-    .populate({ path: 'size', model: 'Size', select: 'size -_id' });
+    });
+
+    if (!result) {
+      return null;
+    }
+
+    const colors = await ColorModel.find({ _id: { $in: result.color } });
+    const sizes = await SizeModel.find({ _id: { $in: result.size } });
+
+    // console.log('colors', colors);
+    // console.log('sizes', sizes);
+    const populatedProduct = {
+      ...result.toObject(),
+      color: colors,
+      size: sizes
+    };
+
+    return transformProductData(populatedProduct);
+   
   
   return result ? transformProductData(result) : null;
+};
+
+const populateProductColorsAndSizes = async (id: string, colorIds: string[], sizeIds: string[]) => {
+  const product = await ProductModel.findById(id);
+  
+  if (!product) {
+    throw new Error('Product not found.');
+  }
+
+  // Find color attributes by IDs
+  const colors = await ColorModel.find({ _id: { $in: colorIds } }).select('color -_id');
+  
+  // Find size attributes by IDs
+  const sizes = await SizeModel.find({ _id: { $in: sizeIds } }).select('size -_id');
+
+  // Create a mock populated product with the found attributes
+  const populatedProduct = {
+    ...product.toObject(),
+    color: colors,
+    size: sizes
+  };
+
+  // Populate categories for the product
+  const productWithCategories = await ProductModel.findById(id)
+    .populate({
+      path: 'catagory',
+      model: 'Catagory',
+      populate: {
+        path: 'parent',
+        model: 'Catagory',
+      },
+    });
+
+  if (!productWithCategories) {
+    throw new Error('Product not found after category population.');
+  }
+
+  // Combine the product with categories and the manually found colors/sizes
+  const finalProduct = {
+    ...productWithCategories.toObject(),
+    color: colors,
+    size: sizes
+  };
+
+  return transformProductData(finalProduct);
 };
 
 const updateProductIntoDB = async (id: string, payload: Partial<TProduct>) => {
@@ -249,15 +310,23 @@ const updateProductIntoDB = async (id: string, payload: Partial<TProduct>) => {
   let colorIds: Types.ObjectId[] | undefined = undefined;
   if (payload.color && Array.isArray(payload.color)) {
     colorIds = await Promise.all(
-      payload.color.map(async (color: string | Types.ObjectId) => {
+      payload.color.map(async (color: string | Types.ObjectId | { name: string; code: string }) => {
         if (typeof color === 'string') {
           let colorDoc = await ColorModel.findOne({ color });
           if (!colorDoc) {
             colorDoc = await ColorModel.create({ color });
           }
           return colorDoc._id as Types.ObjectId;
+        } else if (typeof color === 'object' && color !== null && 'name' in color) {
+          // Handle object format with name and code properties
+          const colorValue = color.name || color.code;
+          let colorDoc = await ColorModel.findOne({ color: colorValue });
+          if (!colorDoc) {
+            colorDoc = await ColorModel.create({ color: colorValue });
+          }
+          return colorDoc._id as Types.ObjectId;
         } else {
-          return color;
+          return color as Types.ObjectId;
         }
       })
     );
@@ -267,15 +336,23 @@ const updateProductIntoDB = async (id: string, payload: Partial<TProduct>) => {
   let sizeIds: Types.ObjectId[] | undefined = undefined;
   if (payload.size && Array.isArray(payload.size)) {
     sizeIds = await Promise.all(
-      payload.size.map(async (size: string | Types.ObjectId) => {
+      payload.size.map(async (size: string | Types.ObjectId | { name: string; code: string }) => {
         if (typeof size === 'string') {
           let sizeDoc = await SizeModel.findOne({ size });
           if (!sizeDoc) {
             sizeDoc = await SizeModel.create({ size });
           }
           return sizeDoc._id as Types.ObjectId;
+        } else if (typeof size === 'object' && size !== null && 'name' in size) {
+          // Handle object format with name and code properties
+          const sizeValue = size.name || size.code;
+          let sizeDoc = await SizeModel.findOne({ size: sizeValue });
+          if (!sizeDoc) {
+            sizeDoc = await SizeModel.create({ size: sizeValue });
+          }
+          return sizeDoc._id as Types.ObjectId;
         } else {
-          return size;
+          return size as Types.ObjectId;
         }
       })
     );
@@ -534,5 +611,6 @@ export const ProductServices = {
   deleteProductFromDB,
   getProductsByCategoryFromDB,
   purchaseProduct,
-  getTopSellingProductsFromDB
+  getTopSellingProductsFromDB,
+  populateProductColorsAndSizes
 };

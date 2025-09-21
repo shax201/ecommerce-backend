@@ -26,7 +26,7 @@ router.post('/seed_products',
     requirePermission('products', 'create'),
     ProductControllers.seedProducts);
 
-router.put('/update/:id', 
+router.put('/:id', 
     authMiddleware, 
     requirePermission('products', 'update'),
     ProductControllers.updateProduct);
